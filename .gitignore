@@ -1,0 +1,30 @@
+# Node.js
+node_modules/
+dist/
+build/
+npm-debug.log
+.env
+.env.local
+
+# .NET Core / C#
+bin/
+obj/
+TestResults/
+*.userprefs
+*.user
+*.suo
+*.sln.docstates
+.vs/
+
+# Visual Studio / VS Code
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
