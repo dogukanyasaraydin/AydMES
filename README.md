@@ -4,15 +4,15 @@ AYD MES, fabrika üretim sahasındaki makine verilerini, OEE (Genel Ekipman Etki
 
 ## 🚀 Özellikler
 
-- **Gerçek Zamanlı Makine İzleme:** Fabrikadaki pres vb. makinelerin anlık durumlarını (Çalışıyor, Durdu, Arıza), vuruş sayılarını ve sıcaklık değerlerini canlı olarak takip edebilirsiniz.
-- **OEE Analizi ve Dashboard:** Üretim trendlerini, canlı OEE verilerini ve makine performanslarını özet grafiklerle tek ekranda inceleme.
-- **Üretim Planlama ve Optimizasyon:** Vardiyalık iş emirlerini (ürün, hat, hedef sayı) oluşturma, planlama ve durumlarını takip etme.
-- **Duruş (Downtime) Yönetimi:** Planlı ve plansız duruşları kaydetme, nedenlerini raporlama.
-- **Kalıp ve Bakım Yönetimi:** Üretimde kullanılan kalıpların vuruş ömürlerini izleme ve bakım/revizyon süreçlerini yönetme.
+- :** Üretimde kullanılan kalıpların vuruş ömürlerini izleme ve bakım/revizyon süreçlerini yönetme.
 - **Kalite Kontrol:** Hatalı ürün (defekt) girişleri yapma ve parti bazlı kalite onay süreçlerini işletme.
 - **Fabrika Telemetri Haritası:** Tesis içerisindeki makine yerleşimlerine göre canlı performans renk haritalaması.
 - **Çevrimdışı (Offline) Demo Modu:** Backend kapalı olduğunda sistemin otomatik olarak Sahte (Mock) verilerle "Sistem Çevrimdışı" moduna geçip tam teşekküllü çalışmaya devam etmesi. Akıllı Timeout yapısıyla donmaları engeller.
-
+**Gerçek Zamanlı Makine İzleme:** Fabrikadaki pres vb. makinelerin anlık durumlarını (Çalışıyor, Durdu, Arıza), vuruş sayılarını ve sıcaklık değerlerini canlı olarak takip edebilirsiniz.
+- **OEE Analizi ve Dashboard:** Üretim trendlerini, canlı OEE verilerini ve makine performanslarını özet grafiklerle tek ekranda inceleme.
+- **Üretim Planlama ve Optimizasyon:** Vardiyalık iş emirlerini (ürün, hat, hedef sayı) oluşturma, planlama ve durumlarını takip etme.
+- **Duruş (Downtime) Yönetimi:** Planlı ve plansız duruşları kaydetme, nedenlerini raporlama.
+- **Kalıp ve Bakım Yönetimi
 ## 🛠️ Teknolojiler
 
 Bu proje iki ana katmandan oluşmaktadır:

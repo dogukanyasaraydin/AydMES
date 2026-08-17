@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AydMES.Api.Models;
-using AydMES.Api.Models;
 
 namespace AydMES.Api.Controllers
 {

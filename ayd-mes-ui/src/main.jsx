@@ -13,7 +13,7 @@ window._isBackendDead = false;
 window.fetch = async (...args) => {
   const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
   
-  if (url && url.includes('localhost:7193')) {
+  if (url && (url.includes('127.0.0.1') || url.includes('localhost'))) {
     const controller = new AbortController();
     // Eğer backend kapalıysa süreyi çok kısa tut (300ms), açıksa yavaş PC'lere tolerans tanı (8000ms)
     const timeoutDuration = window._isBackendDead ? 300 : 8000; 

@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using AydMES.Api.Models;
-using AydMES.Api.Models;
 using AydMES.Models;
 using AydMES.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -186,7 +185,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // YERELDE HTTP ÇALIŞMASI İÇİN KAPATILDI
 
 // ---> CORS VE GÜVENLİK PİPELİNE SIRALAMASI <---
 app.UseCors("ReactIzin");
