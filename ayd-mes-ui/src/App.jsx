@@ -296,10 +296,13 @@ export default function App() {
             <div style={{ position: 'relative' }}>
               <button 
                 onClick={() => setNotice(!notice)}
-                style={{ background: 'none', border: '1px solid #E2E8F0', borderRadius: '8px', width: '40px', height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', position: 'relative', transition: 'background-color 0.2s' }}
+                style={{ background: 'none', border: `1px solid ${ayarlar?.tema === 'dark' ? '#4A5568' : '#E2E8F0'}`, borderRadius: '8px', width: '40px', height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', position: 'relative', transition: 'background-color 0.2s' }}
               >
-                <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#4A5568' }}>BİLD</span>
-                {isBackendOnline && <span style={{ position: 'absolute', top: '-6px', right: '-6px', backgroundColor: '#E53E3E', color: 'white', fontSize: '10px', fontWeight: 'bold', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>2</span>}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={ayarlar?.tema === 'dark' ? '#E2E8F0' : '#4A5568'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                {isBackendOnline && <span style={{ position: 'absolute', top: '-6px', right: '-6px', backgroundColor: '#E53E3E', color: 'white', fontSize: '10px', fontWeight: 'bold', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', border: `2px solid ${ayarlar?.tema === 'dark' ? '#1A202C' : '#fff'}`, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>2</span>}
               </button>
 
               {notice && (

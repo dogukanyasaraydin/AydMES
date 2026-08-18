@@ -242,10 +242,10 @@ export default function Production({ ayarlar, gosterBildirim }) {
   return (
     <>
       <div className="kpi-grid planning-kpis">
-        <Stat label="Bugünkü iş emri" value={bugunkuIsEmri} sub="canlı günlük plan" icon="EMR"/>
-        <Stat label="Kapasite kullanımı" value={`%${kapasite}`} sub="aktif kaynak verimliliği" icon="KAP"/>
-        <Stat label="Aktif Üretim" value={uretimdekiler} sub="şu an işlenen" icon="ÜRT"/>
-        <Stat label="Acil Planlar" value={acilPlanlar} sub="yüksek öncelikli" icon="ACİ" danger={acilPlanlar > 0}/>
+        <Stat label="Bugünkü iş emri" value={bugunkuIsEmri} sub="canlı günlük plan" icon="İŞ EMRİ"/>
+        <Stat label="Kapasite kullanımı" value={`%${kapasite}`} sub="aktif kaynak verimliliği" icon="KAPASİTE"/>
+        <Stat label="Aktif Üretim" value={uretimdekiler} sub="şu an işlenen" icon="ÜRETİM"/>
+        <Stat label="Acil Planlar" value={acilPlanlar} sub="yüksek öncelikli" icon="ACİL" danger={acilPlanlar > 0}/>
       </div>
       
       <div className="content-grid plan-layout">

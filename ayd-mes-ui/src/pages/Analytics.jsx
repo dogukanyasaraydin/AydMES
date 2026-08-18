@@ -279,10 +279,10 @@ export default function Analytics({ ayarlar, gosterBildirim, tarihFiltresi }) {
       )}
 
       <div className="kpi-grid">
-        <Stat label="Ortalama OEE" value={`%${ortOee}`} sub="Tüm Makineler" icon="OEE" />
-        <Stat label="Toplam Duruş" value={`${toplamDurusDakika} dk`} sub="Vardiya Geneli" icon="DUR" danger={toplamDurusDakika > 60} />
-        <Stat label="Kayıtlı Makine" value={filtrelenmisOee.length || 4} sub="Aktif İzlenen" icon="MAK" />
-        <Stat label="Kritik Durum" value={kritikDurusSayisi} sub="Müdahale Bekleyen" icon="KRİ" danger={kritikDurusSayisi > 0} />
+        <Stat label="Ortalama OEE" value={`%${ortOee}`} sub="Tüm Makineler" icon="OEE %" />
+        <Stat label="Toplam Duruş" value={`${toplamDurusDakika} dk`} sub="Vardiya Geneli" icon="DURUŞ" danger={toplamDurusDakika > 60} />
+        <Stat label="Kayıtlı Makine" value={filtrelenmisOee.length || 4} sub="Aktif İzlenen" icon="MAKİNE" />
+        <Stat label="Kritik Durum" value={kritikDurusSayisi} sub="Müdahale Bekleyen" icon="KRİTİK" danger={kritikDurusSayisi > 0} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.5fr) minmax(0, 1fr)', gap: '24px', marginBottom: '24px' }}>

@@ -275,25 +275,25 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi }) {
           label="İlk seferde doğru" 
           value={isApiActive ? "%98,7" : "%0"} 
           sub="Canlı OEE verisiyle eşleşiyor" 
-          icon="OK"
+          icon="KALİTE"
         />
         <Stat 
           label="Kontrol bekleyen" 
           value={safeOnaylar.length} 
           sub={`${safeOnaylar.length} parti için onay gerekli`} 
-          icon="BEK"
+          icon="BEKLEYEN"
         />
         <Stat 
           label="Toplam defekt" 
           value={toplamDefektAdet} 
           sub="Bugünkü toplam fire" 
-          icon="DEF"
+          icon="DEFEKT"
         />
         <Stat 
           label="En sık defekt" 
           value={enSikDefektAdi} 
           sub={`${enSikDefektAdeti} kayıt`} 
-          icon="EN"
+          icon="EN SIK"
         />
       </div>
       

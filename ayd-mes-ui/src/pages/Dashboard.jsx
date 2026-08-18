@@ -35,7 +35,7 @@ function Stat({ label, value, sub, icon, danger, isLive = false, isBackendOnline
   ); 
 }
 
-function Alerts({ makineVerileri, setPage, isBackendOnline = true }) {
+function Alerts({ makineVerileri, setPage, isBackendOnline = true, ayarlar }) {
   if (!isBackendOnline) {
     return (
       <div className="alert-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -90,17 +90,19 @@ function Alerts({ makineVerileri, setPage, isBackendOnline = true }) {
 
   const oncelikDegerleri = { 'danger': 4, 'warning': 3, 'info': 2, 'success': 1 };
   dinamikUyarilar.sort((a, b) => oncelikDegerleri[b.tone] - oncelikDegerleri[a.tone]);
-  const gosterilecekUyarilar = dinamikUyarilar.slice(0, 5);
+  const gosterilecekUyarilar = dinamikUyarilar.slice(0, 4);
+
+  const isDark = ayarlar?.tema === 'dark';
 
   return (
     <div className="alert-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       {gosterilecekUyarilar.map((u, i) => (
-        <div className="alert" key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderRadius: '8px', backgroundColor: u.tone === 'danger' ? '#FFF5F5' : (u.tone === 'warning' ? '#FEFCBF' : '#F7FAFC'), borderLeft: `4px solid ${u.tone === 'danger' ? '#E53E3E' : (u.tone === 'warning' ? '#DD6B20' : '#38A169')}` }}>
+        <div className="alert" key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderRadius: '8px', backgroundColor: isDark ? (u.tone === 'danger' ? 'rgba(229, 62, 62, 0.15)' : (u.tone === 'warning' ? 'rgba(221, 107, 32, 0.15)' : '#2D3748')) : (u.tone === 'danger' ? '#FFF5F5' : (u.tone === 'warning' ? '#FEFCBF' : '#F7FAFC')), borderLeft: `4px solid ${u.tone === 'danger' ? '#E53E3E' : (u.tone === 'warning' ? '#DD6B20' : '#38A169')}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: u.tone === 'danger' ? '#E53E3E' : (u.tone === 'warning' ? '#DD6B20' : '#38A169') }} />
             <div>
-              <strong style={{ fontSize: '13px', display: 'block', color: '#2D3748' }}>{u.title}</strong>
-              <small style={{ fontSize: '12px', color: '#718096' }}>{u.text}</small>
+              <strong style={{ fontSize: '13px', display: 'block', color: isDark ? '#F9FAFB' : '#2D3748' }}>{u.title}</strong>
+              <small style={{ fontSize: '12px', color: isDark ? '#CBD5E1' : '#718096' }}>{u.text}</small>
             </div>
           </div>
           <Badge tone={u.tone}>{u.status}</Badge>
@@ -110,7 +112,7 @@ function Alerts({ makineVerileri, setPage, isBackendOnline = true }) {
   );
 }
 
-function LiveFeedStream({ canliMakineler = [], isBackendOnline = true }) {
+function LiveFeedStream({ canliMakineler = [], isBackendOnline = true, ayarlar }) {
   const [loglar, setLoglar] = useState([]);
   const oncekiMakinelerRef = useRef({});
 
@@ -174,12 +176,14 @@ function LiveFeedStream({ canliMakineler = [], isBackendOnline = true }) {
     });
 
     if (yeniLoglar.length > 0) {
-      setLoglar(prev => [...yeniLoglar, ...prev].slice(0, 10));
+      setLoglar(prev => [...yeniLoglar, ...prev].slice(0, 4));
     }
   }, [canliMakineler]);
 
+  const isDark = ayarlar?.tema === 'dark';
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '250px', overflowY: 'auto' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       {!isBackendOnline ? (
         <div style={{ padding: '20px', textAlign: 'center', color: '#E53E3E', fontSize: '13px', fontWeight: 'bold' }}>
           C# API sunucusu çevrimdışı. Saha akış verisi alınamıyor.
@@ -190,15 +194,15 @@ function LiveFeedStream({ canliMakineler = [], isBackendOnline = true }) {
         </div>
       ) : (
         loglar.map((l) => (
-          <div key={l.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '8px', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', animation: 'fadeIn 0.3s ease-out' }}>
+          <div key={l.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '8px', backgroundColor: isDark ? '#2D3748' : '#F8FAFC', border: `1px solid ${isDark ? '#4A5568' : '#E2E8F0'}`, animation: 'fadeIn 0.3s ease-out' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: l.tone === 'danger' ? '#E53E3E' : (l.tone === 'success' ? '#38A169' : '#3182CE') }} />
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <strong style={{ fontSize: '13px', color: '#1A202C' }}>{l.kod}</strong>
+                  <strong style={{ fontSize: '13px', color: isDark ? '#F9FAFB' : '#1A202C' }}>{l.kod}</strong>
                   <small style={{ fontSize: '11px', color: '#718096', fontWeight: 'bold' }}>{l.saat}</small>
                 </div>
-                <span style={{ fontSize: '12px', color: '#4A5568' }}>{l.mesaj}</span>
+                <span style={{ fontSize: '12px', color: isDark ? '#CBD5E1' : '#4A5568' }}>{l.mesaj}</span>
               </div>
             </div>
             <Badge tone={l.tone}>{l.tip.toUpperCase()}</Badge>
@@ -292,8 +296,8 @@ function TaskTable({ ayarlar, gosterBildirim }) {
 
       {isModalAcik && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div style={{ backgroundColor: '#FAFAFA', padding: '32px', borderRadius: '8px', width: '400px', border: '1px solid #E5E7EB', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
-            <h3 style={{ marginTop: 0, marginBottom: '20px', color: '#333' }}>Yeni Görev Ekle</h3>
+          <div style={{ backgroundColor: ayarlar?.tema === 'dark' ? '#1F2937' : '#FAFAFA', padding: '32px', borderRadius: '8px', width: '400px', border: `1px solid ${ayarlar?.tema === 'dark' ? '#374151' : '#E5E7EB'}`, boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '20px', color: ayarlar?.tema === 'dark' ? '#F9FAFB' : '#333' }}>Yeni Görev Ekle</h3>
             <form onSubmit={gorevKaydet} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '14px', color: '#555' }}>
                 Görev Adı
@@ -454,20 +458,20 @@ export default function Dashboard({ ayarlar, gosterBildirim, setPage, isBackendO
   return (
     <>
       <div className="kpi-grid">
-        <Stat label="Anlık OEE" value={`%${anlikOeeOrtalama}`} sub="Canlı Hesaplama" icon="OEE" isLive isBackendOnline={isBackendOnline} danger={parseFloat(anlikOeeOrtalama) < 60} />
-        <Stat label="Toplam Üretim" value={`${toplamUretim.toLocaleString()} adet`} sub="Bugünkü canlı vuruş" icon="ÜRT" isLive isBackendOnline={isBackendOnline} />
-        <Stat label="Makine Kullanımı" value={`%${makineKullanimi}`} sub="Canlı Veri" icon="KAP" isLive isBackendOnline={isBackendOnline} /> 
-        <Stat label="Fire Oranı" value={`%${fireOrani}`} sub="Kalite kaybı" icon="FIR" isLive isBackendOnline={isBackendOnline} />
+        <Stat label="Anlık OEE" value={`%${anlikOeeOrtalama}`} sub="Canlı Hesaplama" icon="OEE %" isLive isBackendOnline={isBackendOnline} danger={parseFloat(anlikOeeOrtalama) < 60} />
+        <Stat label="Toplam Üretim" value={`${toplamUretim.toLocaleString()} adet`} sub="Bugünkü canlı vuruş" icon="ÜRETİM" isLive isBackendOnline={isBackendOnline} />
+        <Stat label="Makine Kullanımı" value={`%${makineKullanimi}`} sub="Canlı Veri" icon="KAPASİTE" isLive isBackendOnline={isBackendOnline} /> 
+        <Stat label="Fire Oranı" value={`%${fireOrani}`} sub="Kalite kaybı" icon="FİRE" isLive isBackendOnline={isBackendOnline} />
       </div>
       
       {/* CANLI FABRİKA OLAY AKIŞI VE CANLI UYARILAR */}
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1.1fr)', gap: '24px', marginBottom: '24px' }}>
         <Card title="CANLI SAHA AKIŞ LOGU (REAL-TIME EVENT STREAM)">
-          <LiveFeedStream canliMakineler={canliMakineler} isBackendOnline={isBackendOnline} />
+          <LiveFeedStream canliMakineler={canliMakineler} isBackendOnline={isBackendOnline} ayarlar={ayarlar} />
         </Card>
 
         <Card title="CANLI SİSTEM UYARILARI">
-          <Alerts makineVerileri={canliMakineler} setPage={setPage} isBackendOnline={isBackendOnline} />
+          <Alerts makineVerileri={canliMakineler} setPage={setPage} isBackendOnline={isBackendOnline} ayarlar={ayarlar} />
         </Card>
       </div>
 
