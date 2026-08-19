@@ -24,13 +24,13 @@ namespace AydMES.Api.Controllers
                 _context.UretimLoglari.Add(yeniLog);
                 await _context.SaveChangesAsync();
 
-                // Baþarýlý olursa React'a 200 OK mesajý gönder (Bu mesaj pencereyi kapatacak!)
-                return Ok(new { message = "Kayýt baþarýyla eklendi." });
+                // Baï¿½arï¿½lï¿½ olursa React'a 200 OK mesajï¿½ gï¿½nder (Bu mesaj pencereyi kapatacak!)
+                return Ok(new { message = "Kayï¿½t baï¿½arï¿½yla eklendi." });
             }
             catch (Exception ex)
             {
-                // Bir hata olursa 500 kodu dön
-                return StatusCode(500, $"Sunucu hatasý: {ex.Message}");
+                // Bir hata olursa 500 kodu dï¿½n
+                return StatusCode(500, $"Sunucu hatasÄ±: {ex.Message}");
             }
         }
     }

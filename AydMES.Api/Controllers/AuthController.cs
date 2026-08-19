@@ -3,6 +3,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AydMES.Api.Models;
+using System.Linq;
 
 namespace AydMES.Api.Controllers
 {
@@ -10,21 +12,29 @@ namespace AydMES.Api.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        // Program.cs'de kullandığın anahtar ile aynı olmalı!
         private const string SecretKey = "AydMES_Proje_Guvenlik_Anahtari_123456789";
+        private readonly MesDbContext _context;
+
+        public AuthController(MesDbContext context)
+        {
+            _context = context;
+        }
 
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
-            // --- BURASI MOCK (SAHTE) GİRİŞ KONTROLÜ ---
-            // İleride burayı 'db.Kullanicilar.FirstOrDefault(...)' ile veritabanına bağlayacağız.
-            if (request.Username == "dogukan" && request.Password == "123")
+            // Veritabanından kullanıcıyı kontrol et
+            var user = _context.Kullanicilar.FirstOrDefault(u => u.KullaniciAdi == request.Username && u.Sifre == request.Password);
+
+            if (user != null)
             {
-                // Token içine "Süpervizör" rolünü gömüyoruz
+                user.SonGiris = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+                _context.SaveChanges();
+
                 var claims = new[]
                 {
-                    new Claim(ClaimTypes.Name, request.Username),
-                    new Claim(ClaimTypes.Role, "Süpervizör")
+                    new Claim(ClaimTypes.Name, user.AdSoyad),
+                    new Claim(ClaimTypes.Role, user.Rol)
                 };
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
@@ -39,12 +49,26 @@ namespace AydMES.Api.Controllers
                 return Ok(new
                 {
                     token = new JwtSecurityTokenHandler().WriteToken(token),
-                    role = "Süpervizör",
-                    username = request.Username
+                    role = user.Rol,
+                    username = user.AdSoyad
                 });
             }
 
             return Unauthorized(new { message = "Hatalı kullanıcı adı veya şifre!" });
+        }
+
+        [HttpPost("register")]
+        public IActionResult Register([FromBody] Kullanici kullanici)
+        {
+            if (_context.Kullanicilar.Any(u => u.KullaniciAdi == kullanici.KullaniciAdi))
+            {
+                return BadRequest(new { message = "Bu kullanıcı adı zaten alınmış!" });
+            }
+
+            _context.Kullanicilar.Add(kullanici);
+            _context.SaveChanges();
+
+            return Ok(new { message = "Kullanıcı başarıyla kaydedildi." });
         }
     }
 

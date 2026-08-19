@@ -1,5 +1,32 @@
 import { useState, useEffect, useMemo } from 'react';
 import { mockMakineVerileri } from '../utils/mockData';
+function OeeGauge({ value, size = 110 }) {
+  // OEE değeri doğrudan C# Backend'den (MakineVerileri veya OeeKayitlari tablosundan) gelir.
+  const safeValue = typeof value === 'number' && !isNaN(value) ? Math.round(value) : 0;
+
+  const radius = 40;
+  const circumference = Math.PI * radius;
+  const offset = circumference - ((safeValue / 100) * circumference);
+  
+  const color = safeValue >= 80 ? '#10B981' : (safeValue >= 50 ? '#F59E0B' : '#E53E3E');
+
+  return (
+    <div style={{ position: 'relative', width: size, height: size / 2 + 15, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <svg width={size} height={size / 2 + 5} viewBox="0 0 100 55" style={{ overflow: 'visible' }}>
+        {/* Arka plan yayı */}
+        <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#E2E8F0" strokeWidth="10" strokeLinecap="round" />
+        {/* Değer yayı (Animasyonlu) */}
+        <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" 
+              strokeDasharray={circumference} strokeDashoffset={offset} 
+              style={{ transition: 'stroke-dashoffset 1.5s ease-out' }} />
+      </svg>
+      <div style={{ position: 'absolute', bottom: '-5px', textAlign: 'center' }}>
+        <strong style={{ fontSize: '20px', color: color }}>%{value}</strong>
+        <span style={{ display: 'block', fontSize: '10px', color: '#718096', fontWeight: 'bold', marginTop: '-2px' }}>OEE</span>
+      </div>
+    </div>
+  );
+}
 
 function PresMakineleri({ ayarlar }) {
   const [makineVerileri, setMakineVerileri] = useState([]);
@@ -80,11 +107,13 @@ function PresMakineleri({ ayarlar }) {
       const hataliAdet = apiMatch.hataliAdet !== undefined ? apiMatch.hataliAdet : (apiMatch.HataliAdet || 0);
       const fireOrani = apiMatch.fireOrani !== undefined ? apiMatch.fireOrani : (apiMatch.FireOrani || 0);
       
-      return { id: apiMatch.id || apiMatch.Id || (index + 1), kod, aciklama, durum, yagSeviyesi, sicaklik, basinc, vurusSayisi, vardiya, hataliAdet, fireOrani };
+      // OEE verisini C# Backend Makine tablosundan veya MockData'dan çekiyoruz
+      const oeeRaw = isArray ? apiMatch[6] : (apiMatch.oee || apiMatch.Oee);
+      const oee = oeeRaw !== undefined ? parseFloat(oeeRaw) : (durum === 'Çalışıyor' ? 85 : 0);
+      
+      return { id: apiMatch.id || apiMatch.Id || (index + 1), kod, aciklama, durum, yagSeviyesi, sicaklik, basinc, vurusSayisi, vardiya, hataliAdet, fireOrani, oee };
     });
   }, [makineVerileri, varsayilanMakineler]);
-
-  // Sahte sayaç kaldırıldı — vuruş sayısı artık yalnızca C# API/SQL'den okunur
 
   const filtrelenmisMakineler = islenenMakineler.filter((makine) => {
     if (seciliHat !== 'Tüm hatlar') {
@@ -154,15 +183,23 @@ function PresMakineleri({ ayarlar }) {
                     {mevcutDurum}
                   </span>
                 </div>
-                <div className="machine-metrics">
-                  <div><span>Yağ Seviyesi</span><strong>{makine.yagSeviyesi}</strong></div>
-                  <div><span>Sıcaklık</span><strong>{makine.sicaklik}°C</strong></div>
-                  <div><span>Basınç</span><strong>{mevcutDurum === 'Çalışıyor' ? (!makine.basinc || makine.basinc === '0' || makine.basinc === '0 Bar' ? '185 Bar' : (makine.basinc.includes('Bar') ? makine.basinc : `${makine.basinc} Bar`)) : (makine.basinc?.includes('Bar') ? makine.basinc : `${makine.basinc || 0} Bar`)}</strong></div>
-                  <div><span>Fire / Hurda</span><strong style={{ color: (makine.hataliAdet || 0) > 0 ? '#E53E3E' : 'inherit' }}>{makine.hataliAdet || 0} Adet (%{makine.fireOrani || 0})</strong></div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', alignItems: 'center' }}>
+                  <div className="machine-metrics" style={{ gridTemplateColumns: 'repeat(2, 1fr)', padding: '0', border: 'none', gap: '8px' }}>
+                    <div style={{ backgroundColor: ayarlar?.tema === 'dark' ? '#1A202C' : '#F7FAFC', padding: '10px', borderRadius: '6px' }}><span>Yağ Seviyesi</span><strong>{makine.yagSeviyesi}</strong></div>
+                    <div style={{ backgroundColor: ayarlar?.tema === 'dark' ? '#1A202C' : '#F7FAFC', padding: '10px', borderRadius: '6px' }}><span>Sıcaklık</span><strong>{makine.sicaklik}°C</strong></div>
+                    <div style={{ backgroundColor: ayarlar?.tema === 'dark' ? '#1A202C' : '#F7FAFC', padding: '10px', borderRadius: '6px' }}><span>Fire / Hurda</span><strong style={{ color: (makine.hataliAdet || 0) > 0 ? '#E53E3E' : 'inherit' }}>{makine.hataliAdet || 0} Adet</strong></div>
+                    <div style={{ backgroundColor: ayarlar?.tema === 'dark' ? '#1A202C' : '#F7FAFC', padding: '10px', borderRadius: '6px' }}><span>Basınç</span><strong>{mevcutDurum === 'Çalışıyor' ? (!makine.basinc || makine.basinc === '0' || makine.basinc === '0 Bar' ? '185 Bar' : (makine.basinc.includes('Bar') ? makine.basinc : `${makine.basinc} Bar`)) : (makine.basinc?.includes('Bar') ? makine.basinc : `${makine.basinc || 0} Bar`)}</strong></div>
+                  </div>
+                  
+                  {/* Gerçek Backend OEE Verisine Bağlı Yuvarlak Grafik */}
+                  <div style={{ padding: '0 10px', display: 'flex', justifyContent: 'center' }}>
+                    <OeeGauge value={makine.oee} />
+                  </div>
                 </div>
-                <div className="progress"><span style={{ width: makine.yagSeviyesi ? makine.yagSeviyesi.replace('%', '') + '%' : '0%' }} /></div>
 
-                <div className="machine-foot" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px' }}>
+                <div className="progress" style={{ marginTop: '15px' }}><span style={{ width: makine.yagSeviyesi ? makine.yagSeviyesi.replace('%', '') + '%' : '0%' }} /></div>
+
+                <div className="machine-foot" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px', borderTop: `1px solid ${ayarlar?.tema === 'dark' ? '#4A5568' : '#E8EEF5'}`, paddingTop: '12px' }}>
                   <small>
                     Vuruş: <strong style={{ fontSize: '13px' }}>{mevcutVurus.toLocaleString()}</strong>
                   </small>

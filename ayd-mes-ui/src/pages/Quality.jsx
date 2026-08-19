@@ -3,6 +3,7 @@ import { mockDefektKayitlari, mockKaliteOnaylari } from '../utils/mockData';
 import { excelIndir } from '../utils/excel';
 import { pdfRaporuOlustur } from '../utils/pdf';
 import DateRangePicker from '../components/DateRangePicker';
+import { canEdit } from '../utils/permissions';
 
 function Badge({ children, tone = 'neutral' }) {
   return <span className={`badge badge-${tone}`}>{children}</span>;
@@ -28,7 +29,7 @@ function Stat({ label, value, sub, icon, danger }) {
   ); 
 }
 
-export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi }) { 
+export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi, userRole }) { 
   const [defektler, setDefektler] = useState([]);
   const [onaylar, setOnaylar] = useState([]); 
   const [dateFilter, setDateFilter] = useState({ baslangic: '', bitis: '', preset: 'Tüm Zamanlar' });
@@ -239,7 +240,7 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi }) {
     const handlePdf = () => {
       pdfRaporuOlustur({
         baslik: 'Kalite Kontrol ve Onay Raporu',
-        altBaslik: 'Defekt dağlımı, kalite oranları ve onay süreçleri günlük rapor dökümü',
+        altBaslik: 'Defekt dağılımı, kalite oranları ve onay süreçleri günlük rapor dökümü',
         veriler: filteredOnaylar,
         sutunlar: [
           { header: 'Parti Kodu', key: 'partiKodu' },
@@ -290,7 +291,7 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi }) {
           icon="DEFEKT"
         />
         <Stat 
-          label="En sık defekt" 
+          label="En sık defekt"
           value={enSikDefektAdi} 
           sub={`${enSikDefektAdeti} kayıt`} 
           icon="EN SIK"
@@ -345,7 +346,7 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi }) {
                   </div>
                   <b style={{ minWidth: '40px' }}>{d.adet}</b>
                   <small style={{ minWidth: '50px', color: '#718096' }}>{d.oran}</small>
-                  <button onClick={() => setSilinecekDefekt(d)} className="outline-button" style={{ padding: '2px 8px', fontSize: '11px', marginLeft: '10px', color: '#E53E3E', borderColor: '#FEB2B2' }}>Sil</button>
+                  {canEdit(userRole) && (<button onClick={() => setSilinecekDefekt(d)} className="outline-button" style={{ padding: '2px 8px', fontSize: '11px', marginLeft: '10px', color: '#E53E3E', borderColor: '#FEB2B2' }}>Sil</button>)}
                 </div>
               ))
             )}
@@ -393,16 +394,22 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi }) {
                         </Badge>
                       )}
 
-                      <button onClick={() => setDuzenlenecekOnay(onay)} className="outline-button" style={{ padding: '2px 8px', fontSize: '11px' }}>Düzenle</button>
-                      <button onClick={() => setSilinecekOnay(onay)} className="outline-button" style={{ padding: '2px 8px', fontSize: '11px', color: '#E53E3E', borderColor: '#FEB2B2' }}>Sil</button>
+                      {canEdit(userRole) && (
+                        <>
+                          <button onClick={() => setDuzenlenecekOnay(onay)} className="outline-button" style={{ padding: '2px 8px', fontSize: '11px' }}>Düzenle</button>
+                          <button onClick={() => setSilinecekOnay(onay)} className="outline-button" style={{ padding: '2px 8px', fontSize: '11px', color: '#E53E3E', borderColor: '#FEB2B2' }}>Sil</button>
+                        </>
+                      )}
                     </div>
                   </div>
                 );
               })
             )}
-            <button className="outline-button" onClick={() => setIsKontrolModalAcik(true)} style={{ marginTop: '15px' }}>
-              + Yeni Kalite Kontrol Kaydı
-            </button>
+            {canEdit(userRole) && (
+              <button className="outline-button" onClick={() => setIsKontrolModalAcik(true)} style={{ marginTop: '15px' }}>
+                + Yeni Kalite Kontrol Kaydı
+              </button>
+            )}
           </div>
         </Card>
       </div>
@@ -434,7 +441,7 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi }) {
                     <td>
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         <button className="text-action" onClick={() => analizAc(d)}>Analiz Et →</button>
-                        <button onClick={() => setSilinecekDefekt(d)} className="outline-button" style={{ padding: '2px 8px', fontSize: '11px', color: '#E53E3E', borderColor: '#FEB2B2' }}>Sil</button>
+                        {canEdit(userRole) && (<button onClick={() => setSilinecekDefekt(d)} className="outline-button" style={{ padding: '2px 8px', fontSize: '11px', color: '#E53E3E', borderColor: '#FEB2B2' }}>Sil</button>)}
                       </div>
                     </td>
                   </tr>
@@ -561,7 +568,7 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi }) {
               <div style={{ padding: '12px', backgroundColor: '#F7FAFC', borderRadius: '8px' }}><strong>Toplam Kayıt Adedi:</strong> {secilenDefekt.adet} Adet</div>
               <div style={{ padding: '12px', backgroundColor: '#F7FAFC', borderRadius: '8px' }}><strong>Fire Oranı:</strong> {secilenDefekt.oran}</div>
               <div style={{ padding: '12px', backgroundColor: '#FFF5F5', borderRadius: '8px', borderLeft: '4px solid #E53E3E' }}>
-                <strong>Sistem Önerisi:</strong> Bu hat üzerinde hammadde besleme basıncını kontrol edin ve genel kalıp temizliği gerçekleştirin.
+                <strong>Sistem Önerisi:</strong> Bu hat üzerinde hammadde besleme basncnı kontrol edin ve genel kalıp temizliği gerçekleştirin.
               </div>
             </div>
             <button onClick={() => setIsAnalizModalAcik(false)} style={{ width: '100%', padding: '12px', marginTop: '24px', backgroundColor: '#4A5568', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Kapat</button>
@@ -571,3 +578,5 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi }) {
     </>
   ); 
 }
+
+

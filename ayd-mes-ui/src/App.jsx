@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import PageContent from './pages/PageContent';
-import { rolePermissions } from './utils/permissions';
+import { rolePermissions, canEdit } from './utils/permissions';
 import { Toast, LoginScreen, CalendarModal, AyarlarModal } from './components/AppShell';
 
 const menuItems = [
@@ -12,6 +12,7 @@ const menuItems = [
   ['stops', '△', 'Duruş Kayıtları'],
   ['molds', '◇', 'Kalıp Yönetimi'],
   ['quality', '✓', 'Kalite Kontrol'],
+  ['users', '⊚', 'Kullanıcı Yönetimi'],
 ];
 
 const pageMeta = {
@@ -23,7 +24,38 @@ const pageMeta = {
   stops: ['Duruş Kayıtları', 'Andon kayıtlarını inceleyin ve kök neden çalışmalarını yönetin.'],
   molds: ['Kalıp Yönetimi', 'Kalıp ömrü, değişim planı ve bakım ihtiyaçlarını takip edin.'],
   quality: ['Kalite Kontrol', 'Defekt trendlerini, kontrol planlarını ve kalite onaylarını yönetin.'],
+  users: ['Kullanıcı Yönetimi', 'Sisteme erişimi olan personelleri yönetin, rol ve yetkilerini ayarlayın.'],
 };
+
+// --- GLOBAL FETCH INTERCEPTOR (JWT SECURITY WALL) ---
+const originalFetch = window.fetch;
+window.fetch = async function (...args) {
+  let [resource, config] = args;
+  
+  // Sadece kendi Backend API'mize (C#) giden isteklere kalkanı uyguluyoruz
+  if (typeof resource === 'string' && resource.includes('/api/')) {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config = config || {};
+      config.headers = {
+        ...config.headers,
+        'Authorization': `Bearer ${token}`
+      };
+    }
+  }
+
+  const response = await originalFetch(resource, config);
+  
+  // C# Backend yetkisiz giriş veya süresi dolmuş token tespit ederse
+  if (response.status === 401) {
+    console.error("Yetkisiz İstek (401). Güvenlik duvarı oturumu sonlandırıyor.");
+    localStorage.removeItem('token');
+    window.dispatchEvent(new CustomEvent('auth-unauthorized'));
+  }
+  
+  return response;
+};
+// ----------------------------------------------------
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -44,7 +76,18 @@ export default function App() {
   useEffect(() => {
     const handleStatus = (e) => setIsBackendOnline(e.detail);
     window.addEventListener('backend-status', handleStatus);
-    return () => window.removeEventListener('backend-status', handleStatus);
+    
+    // JWT Token geçersiz olduğunda otomatik çıkış yap
+    const handleUnauthorized = () => {
+      setIsAuthenticated(false);
+      gosterBildirim("Oturum süresi doldu veya yetkisiz işlem. Lütfen tekrar giriş yapın.", "error");
+    };
+    window.addEventListener('auth-unauthorized', handleUnauthorized);
+
+    return () => {
+      window.removeEventListener('backend-status', handleStatus);
+      window.removeEventListener('auth-unauthorized', handleUnauthorized);
+    };
   }, []);
 
   const [toast, setToast] = useState({ message: '', type: 'success', visible: false });
@@ -356,7 +399,7 @@ export default function App() {
               {page === 'production' && (
                 <>
                   <button className="outline-button" onClick={() => setIsTakvimAcik(true)}>📅 Üretim Takvimi</button>
-                  <button className="primary-button" onClick={() => setIsYeniKayitAcik(true)}>+ Yeni Üretim Başlat</button>
+                  {canEdit(userRole) && <button className="primary-button" onClick={() => setIsYeniKayitAcik(true)}>+ Yeni Üretim Başlat</button>}
                 </>
               )}
               {page === 'dashboard' && (
@@ -380,13 +423,13 @@ export default function App() {
               {page === 'quality' && (
                 <>
                   <button className="outline-button" onClick={() => setIsTakvimAcik(true)}>📅 Tarih Filtresi</button>
-                  <button className="primary-button" onClick={() => window.dispatchEvent(new CustomEvent('app-quality-form-open'))}>+ Yeni Kontrol Formu</button>
+                  {canEdit(userRole) && <button className="primary-button" onClick={() => window.dispatchEvent(new CustomEvent('app-quality-form-open'))}>+ Yeni Kontrol Formu</button>}
                 </>
               )}
               {page === 'molds' && (
                 <>
                   <button className="outline-button" onClick={() => window.dispatchEvent(new CustomEvent('app-data-refresh'))}>🔄 Liste Yenile</button>
-                  <button className="primary-button" onClick={() => window.dispatchEvent(new CustomEvent('app-mold-form-open'))}>+ Yeni Kalıp Ekle</button>
+                  {canEdit(userRole) && <button className="primary-button" onClick={() => window.dispatchEvent(new CustomEvent('app-mold-form-open'))}>+ Yeni Kalıp Ekle</button>}
                 </>
               )}
               {page === 'machines' && (
@@ -446,7 +489,7 @@ export default function App() {
 
               <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '14px', fontWeight: 'bold' }}>
                 📦 Ürün Adı / Kodu
-                <input required type="text" value={yeniUretim.urun} onChange={(e) => setYeniUretim({...yeniUretim, urun: e.target.value})} placeholder="Örn: Ön Panel Sac Şekilleme - YP-102" style={{ padding: '9px', borderRadius: '6px', border: '1px solid #CBD5E0' }} />
+                <input required type="text" value={yeniUretim.urun} onChange={(e) => setYeniUretim({...yeniUretim, urun: e.target.value})} placeholder="Örn: Ön Panel Sac Şekillendirme - YP-102" style={{ padding: '9px', borderRadius: '6px', border: '1px solid #CBD5E0' }} />
               </label>
 
               <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '14px', fontWeight: 'bold' }}>

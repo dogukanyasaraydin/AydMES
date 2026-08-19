@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { mockKalipKayitlari } from '../utils/mockData';
+import { canEdit } from '../utils/permissions';
 
 function Badge({ children, tone = 'neutral' }) {
   return <span className={`badge badge-${tone}`}>{children}</span>;
@@ -25,7 +26,7 @@ function Stat({ label, value, sub, icon, danger }) {
   ); 
 }
 
-export default function Molds({ ayarlar, gosterBildirim }) { 
+export default function Molds({ ayarlar, gosterBildirim, userRole }) { 
   const [kaliplar, setKaliplar] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
   
@@ -135,15 +136,17 @@ export default function Molds({ ayarlar, gosterBildirim }) {
     <>
       <div className="kpi-grid">
         <Stat label="Aktif kalıp envanteri" value={aktifKalip} sub={`${aktifKalip} kalıp sistemde tanımlı`} icon="◇"/>
-        <Stat label="Bakım yaklaşan kalıp" value={bakimYaklasan} sub="Bakım limiti dolmak üzere" icon="△" danger={bakimYaklasan > 0}/>
-        <Stat label="Ort. Değişim (SMED)" value={safeKaliplar.length > 0 ? "18 dk" : "0 dk"} sub={safeKaliplar.length > 0 ? "-2 dk geçen aya göre" : "Veri yok"} icon="◷"/>
-        <Stat label="Kalıp Verimliliği" value={safeKaliplar.length > 0 ? "%98.4" : "%0"} sub={safeKaliplar.length > 0 ? "Aşınma oranı düşük" : "Veri yok"} icon="↔"/>
+        <Stat label="Bakım yaklaşan kalıp" value={bakimYaklasan} sub="Bakım limiti dolmak üzere" icon="⚠️" danger={bakimYaklasan > 0}/>
+        <Stat label="Ort. Değişim (SMED)" value={safeKaliplar.length > 0 ? "18 dk" : "0 dk"} sub={safeKaliplar.length > 0 ? "-2 dk geçen aya göre" : "Veri yok"} icon="⏱️"/>
+        <Stat label="Kalıp Verimliliği" value={safeKaliplar.length > 0 ? "%98.4" : "%0"} sub={safeKaliplar.length > 0 ? "Aşınma oranı düşük" : "Veri yok"} icon="📈"/>
       </div>
       
       <Card title="📊 Kalıp Ömrü & Bakım Takip Envanteri" action={
-        <button className="primary-button" onClick={() => setIsKalipModalAcik(true)}>
-          + Kalıp ekle
-        </button>
+        canEdit(userRole) && (
+          <button className="primary-button" onClick={() => setIsKalipModalAcik(true)}>
+            + Kalıp ekle
+          </button>
+        )
       }>
         <div className="table-wrap">
           <table>
@@ -198,13 +201,15 @@ export default function Molds({ ayarlar, gosterBildirim }) {
                         </Badge>
                       </td>
                       <td>
-                        <button 
-                          className="outline-button" 
-                          onClick={() => kalipBakimiYap(m.id, m.kalipKodu)}
-                          style={{ fontSize: '11px', padding: '4px 8px', borderColor: isCritical ? '#E53E3E' : undefined }}
-                        >
-                          🔧 Bakım Yap (Sıfırla)
-                        </button>
+                        {canEdit(userRole) && (
+                          <button 
+                            className="outline-button" 
+                            onClick={() => kalipBakimiYap(m.id, m.kalipKodu)}
+                            style={{ fontSize: '11px', padding: '4px 8px', borderColor: isCritical ? '#E53E3E' : undefined }}
+                          >
+                            🔧 Bakım Yap (Sıfırla)
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );
@@ -233,7 +238,7 @@ export default function Molds({ ayarlar, gosterBildirim }) {
 
               <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '14px', fontWeight: 'bold' }}>
                 Kalıp Adı / Tanımı
-                <input required type="text" value={yeniKalip.kalipAdi} onChange={(e) => setYeniKalip({...yeniKalip, kalipAdi: e.target.value})} style={{ padding: '8px', border: '1px solid #CBD5E0', borderRadius: '4px' }} placeholder="Örn: Şase Çift Büküm Kalıbı" />
+                <input required type="text" value={yeniKalip.kalipAdi} onChange={(e) => setYeniKalip({...yeniKalip, kalipAdi: e.target.value})} style={{ padding: '8px', border: '1px solid #CBD5E0', borderRadius: '4px' }} placeholder="Örn: Şasi Çift Büküm Kalıbı" />
               </label>
 
               <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '14px', fontWeight: 'bold' }}>

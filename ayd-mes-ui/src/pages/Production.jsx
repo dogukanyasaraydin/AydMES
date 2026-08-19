@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { mockUretimPlanlari } from '../utils/mockData';
 import { excelIndir } from '../utils/excel';
 import { pdfRaporuOlustur } from '../utils/pdf';
+import { canEdit } from '../utils/permissions';
 
 function Badge({ children, tone = 'neutral', onClick, style = {} }) {
   return (
@@ -35,7 +36,7 @@ function Stat({ label, value, sub, icon, danger }) {
   ); 
 }
 
-function ResourceList({ isApiActive, gosterBildirim }) { 
+function ResourceList({ isApiActive, gosterBildirim, userRole }) { 
   const [isOptimizeModalAcik, setIsOptimizeModalAcik] = useState(false);
   const [optimizasyonHedefi, setOptimizasyonHedefi] = useState('OEE Maksimum');
   const [islemDurumu, setIslemDurumu] = useState('');
@@ -95,7 +96,7 @@ function ResourceList({ isApiActive, gosterBildirim }) {
             <small>%{percent} kullanım</small>
           </div>
         ))}
-        <button className="primary-button full" onClick={() => setIsOptimizeModalAcik(true)}>Planı optimize et</button>
+        {canEdit(userRole) && <button className="primary-button full" onClick={() => setIsOptimizeModalAcik(true)}>Planı optimize et</button>}
       </div>
 
       {isOptimizeModalAcik && (
@@ -121,7 +122,7 @@ function ResourceList({ isApiActive, gosterBildirim }) {
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '15px', alignItems: 'center' }}>
                 <div>
                   {islemDurumu === 'Yükleniyor' && <span style={{ color: '#3182CE', fontSize: '13px', fontWeight: 'bold' }}>Algoritma çalışıyor...</span>}
-                  {islemDurumu === 'Tamamlandı' && <span style={{ color: '#38B2AC', fontSize: '13px', fontWeight: 'bold' }}>✓ Başarıyla Optimize Edildi</span>}
+                  {islemDurumu === 'Tamamlandı' && <span style={{ color: '#38B2AC', fontSize: '13px', fontWeight: 'bold' }}>✔️ Başarıyla Optimize Edildi</span>}
                   {islemDurumu === 'Hata' && <span style={{ color: '#E53E3E', fontSize: '13px', fontWeight: 'bold' }}>Bağlantı Hatası!</span>}
                 </div>
                 
@@ -140,7 +141,7 @@ function ResourceList({ isApiActive, gosterBildirim }) {
   ); 
 }
 
-export default function Production({ ayarlar, gosterBildirim }) {
+export default function Production({ ayarlar, gosterBildirim, userRole }) {
   const [planlar, setPlanlar] = useState([]);
   const [aktifTab, setAktifTab] = useState('Gün');
   
@@ -338,10 +339,10 @@ export default function Production({ ayarlar, gosterBildirim }) {
                       </Badge>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '6px' }}>
+                    {canEdit(userRole) && (<div style={{ display: 'flex', gap: '6px' }}>
                       <button className="outline-button" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={() => setDuzenlenecekPlan(plan)}>Düzenle</button>
                       <button className="outline-button" style={{ padding: '4px 10px', fontSize: '12px', color: '#E53E3E', borderColor: '#FEB2B2' }} onClick={() => setSilinecekPlan(plan)}>Sil</button>
-                    </div>
+                    </div>)}
                   </div>
                 );
               })
@@ -350,7 +351,7 @@ export default function Production({ ayarlar, gosterBildirim }) {
         </Card>
         
         <Card title="Kaynak Uygunluğu">
-          <ResourceList isApiActive={planlar.length > 0} gosterBildirim={gosterBildirim} />
+          <ResourceList isApiActive={planlar.length > 0} gosterBildirim={gosterBildirim} userRole={userRole} />
         </Card>
       </div>
 

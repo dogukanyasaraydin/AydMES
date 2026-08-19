@@ -3,6 +3,7 @@ import { mockDurusKayitlari } from '../utils/mockData';
 import { excelIndir } from '../utils/excel';
 import { pdfRaporuOlustur } from '../utils/pdf';
 import DateRangePicker from '../components/DateRangePicker';
+import { canEdit } from '../utils/permissions';
 
 function Badge({ children, tone = 'neutral' }) {
   return <span className={`badge badge-${tone}`}>{children}</span>;
@@ -28,7 +29,7 @@ function Stat({ label, value, sub, icon, danger }) {
   ); 
 }
 
-export default function Stops({ ayarlar, gosterBildirim, tarihFiltresi }) {
+export default function Stops({ ayarlar, gosterBildirim, tarihFiltresi, userRole }) {
   const [kayitlar, setKayitlar] = useState([]);
   const [seciliZaman, setSeciliZaman] = useState('Bugün');
   const [zamanMenuAcik, setZamanMenuAcik] = useState(false);
@@ -183,18 +184,18 @@ export default function Stops({ ayarlar, gosterBildirim, tarihFiltresi }) {
       <DateRangePicker onFilterChange={setDateFilter} ayarlar={ayarlar} />
 
       <div className="kpi-grid">
-        <Stat label="Toplam duruş" value={`${toplamDurus} dk`} sub="bugünkü toplam" icon="Ⅱ" />
-        <Stat label="Açık kayıt" value={acikKayitSayisi} sub="aksiyon bekliyor" icon="△" danger={acikKayitSayisi > 0} />
-        <Stat label="En yüksek neden" value={enYuksekNeden} sub={`${enYuksekSure} dk`} icon="⌁" />
-        <Stat label="MTTR" value={`${mttr} dk`} sub="ortalama müdahale" icon="◷" />
+        <Stat label="Toplam duruş" value={`${toplamDurus} dk`} sub="bugünkü toplam" icon="📋" />
+        <Stat label="Açık kayıt" value={acikKayitSayisi} sub="aksiyon bekliyor" icon="⚠️" danger={acikKayitSayisi > 0} />
+        <Stat label="En yüksek neden" value={enYuksekNeden} sub={`${enYuksekSure} dk`} icon="🔴" />
+        <Stat label="MTTR" value={`${mttr} dk`} sub="ortalama müdahale" icon="⏱️" />
       </div>
-      
+
       <Card 
         title="Duruş ve Andon Kayıtları" 
         action={
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <button className="outline-button" onClick={() => excelIndir(filteredKayitlar, 'Durus_Kayitlari', gosterBildirim)}>
-              📥 Excel
+              📊 Excel
             </button>
             <button className="outline-button" onClick={() => {
               pdfRaporuOlustur({
@@ -244,7 +245,7 @@ export default function Stops({ ayarlar, gosterBildirim, tarihFiltresi }) {
               )}
             </div>
 
-            <button className="primary-button" onClick={() => setIsDurusModalAcik(true)}>+ Duruş bildir</button>
+            {canEdit(userRole) && (<button className="primary-button" onClick={() => setIsDurusModalAcik(true)}>+ Duruş bildir</button>)}
           </div>
         }
       >

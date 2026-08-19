@@ -126,6 +126,32 @@ function getOeeValue(item) {
   return 0;
 }
 
+function FactoryOeeDoughnut({ oeeValue }) {
+  const value = parseFloat(oeeValue) || 0;
+  const radius = 55;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - ((value / 100) * circumference);
+  
+  const color = value >= 80 ? '#10B981' : (value >= 50 ? '#F59E0B' : '#E53E3E');
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '180px', paddingTop: '10px' }}>
+      <div style={{ position: 'relative', width: '140px', height: '140px' }}>
+        <svg width="140" height="140" viewBox="0 0 140 140" style={{ transform: 'rotate(-90deg)' }}>
+          <circle cx="70" cy="70" r={radius} fill="none" stroke="#E2E8F0" strokeWidth="12" />
+          <circle cx="70" cy="70" r={radius} fill="none" stroke={color} strokeWidth="12" strokeLinecap="round"
+                  strokeDasharray={circumference} strokeDashoffset={offset}
+                  style={{ transition: 'stroke-dashoffset 1.5s ease-out' }} />
+        </svg>
+        <div style={{ position: 'absolute', top: '0', left: '0', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <strong style={{ fontSize: '26px', color: color }}>%{value}</strong>
+          <span style={{ fontSize: '11px', color: '#718096', fontWeight: 'bold' }}>Genel OEE</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Analytics({ ayarlar, gosterBildirim, tarihFiltresi }) { 
   const [oeeKayitlari, setOeeKayitlari] = useState([]);
   const [duruslar, setDuruslar] = useState([]); 
@@ -285,13 +311,17 @@ export default function Analytics({ ayarlar, gosterBildirim, tarihFiltresi }) {
         <Stat label="Kritik Durum" value={kritikDurusSayisi} sub="Müdahale Bekleyen" icon="KRİTİK" danger={kritikDurusSayisi > 0} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.5fr) minmax(0, 1fr)', gap: '24px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', marginBottom: '24px' }}>
         <Card title="Canlı Üretim Trend Çizgisi">
           <TrendChart trendVerileri={trendVerileri} color="#df0613" />
         </Card>
 
         <Card title="Makine Performans Karşılaştırması">
           <MiniBars oeeKayitlari={filtrelenmisOee} />
+        </Card>
+
+        <Card title="Fabrika Genel OEE">
+          <FactoryOeeDoughnut oeeValue={ortOee} />
         </Card>
       </div>
 

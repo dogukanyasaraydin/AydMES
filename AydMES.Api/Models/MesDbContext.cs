@@ -21,5 +21,6 @@ namespace AydMES.Api.Models
         public DbSet<KaliteOnayi> KaliteOnaylari { get; set; }
         public DbSet<PersonelKaydi> PersonelKayitlari { get; set; }
         public DbSet<DevirTeslimKaydi> DevirTeslimKayitlari { get; set; }
+        public DbSet<Kullanici> Kullanicilar { get; set; }
     }
 }
