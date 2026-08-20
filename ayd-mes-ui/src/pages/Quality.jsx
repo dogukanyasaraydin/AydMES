@@ -1,3 +1,4 @@
+import { API_URL } from '../config/api';
 import { useState, useEffect } from 'react';
 import { mockDefektKayitlari, mockKaliteOnaylari } from '../utils/mockData';
 import { excelIndir } from '../utils/excel';
@@ -51,7 +52,7 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi, userRo
 
   const verileriGetir = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const resDefekt = await fetch(`${apiUrl}/DefektKayitlari`);
       if (resDefekt.ok) {
         const dataDefekt = await resDefekt.json();
@@ -90,7 +91,7 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi, userRo
   const kontrolKaydet = async (e) => {
     e.preventDefault();
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const response = await fetch(`${apiUrl}/KaliteOnaylari`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -119,7 +120,7 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi, userRo
 
   const durumDegistir = async (onay, yeniDurum) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const id = onay.id || onay.Id;
       const res = await fetch(`${apiUrl}/KaliteOnaylari/${id}`, {
         method: 'PUT',
@@ -139,7 +140,7 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi, userRo
   const onaySil = async () => {
     if (!silinecekOnay) return;
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const id = silinecekOnay.id || silinecekOnay.Id;
       const res = await fetch(`${apiUrl}/KaliteOnaylari/${id}`, { method: 'DELETE' });
 
@@ -156,7 +157,7 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi, userRo
   const defektSil = async () => {
     if (!silinecekDefekt) return;
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const id = silinecekDefekt.id || silinecekDefekt.Id;
       const res = await fetch(`${apiUrl}/DefektKayitlari/${id}`, { method: 'DELETE' });
 
@@ -174,7 +175,7 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi, userRo
     e.preventDefault();
     if (!duzenlenecekOnay) return;
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const id = duzenlenecekOnay.id || duzenlenecekOnay.Id;
       const res = await fetch(`${apiUrl}/KaliteOnaylari/${id}`, {
         method: 'PUT',
@@ -568,7 +569,7 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi, userRo
               <div style={{ padding: '12px', backgroundColor: '#F7FAFC', borderRadius: '8px' }}><strong>Toplam Kayıt Adedi:</strong> {secilenDefekt.adet} Adet</div>
               <div style={{ padding: '12px', backgroundColor: '#F7FAFC', borderRadius: '8px' }}><strong>Fire Oranı:</strong> {secilenDefekt.oran}</div>
               <div style={{ padding: '12px', backgroundColor: '#FFF5F5', borderRadius: '8px', borderLeft: '4px solid #E53E3E' }}>
-                <strong>Sistem Önerisi:</strong> Bu hat üzerinde hammadde besleme basncnı kontrol edin ve genel kalıp temizliği gerçekleştirin.
+                <strong>Sistem Önerisi:</strong> Bu hat üzerinde hammadde besleme basıncını kontrol edin ve genel kalıp temizliği gerçekleştirin.
               </div>
             </div>
             <button onClick={() => setIsAnalizModalAcik(false)} style={{ width: '100%', padding: '12px', marginTop: '24px', backgroundColor: '#4A5568', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Kapat</button>

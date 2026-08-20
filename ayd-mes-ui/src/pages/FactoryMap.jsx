@@ -1,3 +1,4 @@
+import { API_URL } from '../config/api';
 import { useState, useEffect, useMemo } from 'react';
 import { mockMakineVerileri } from '../utils/mockData';
 
@@ -12,7 +13,7 @@ export default function FactoryMap({ ayarlar, setPage, gosterBildirim }) {
     let isMounted = true;
     const fetchTelemetri = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+        const apiUrl = API_URL;
         const res = await fetch(`${apiUrl}/MakineVerileri`);
         if (res.ok && isMounted) {
           const data = await res.json();

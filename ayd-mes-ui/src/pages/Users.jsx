@@ -1,3 +1,4 @@
+import { API_URL } from '../config/api';
 import { useState, useMemo, useEffect } from 'react';
 
 export default function Users({ ayarlar, gosterBildirim }) {
@@ -9,7 +10,7 @@ export default function Users({ ayarlar, gosterBildirim }) {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+        const apiUrl = API_URL;
         const response = await fetch(`${apiUrl}/Users`);
         if (response.ok) {
           const data = await response.json();
@@ -45,7 +46,7 @@ export default function Users({ ayarlar, gosterBildirim }) {
     }
     
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const eklenecek = {
         ...yeniKullanici,
         durum: 'Aktif',
@@ -75,7 +76,7 @@ export default function Users({ ayarlar, gosterBildirim }) {
 
   const handleSil = async (id) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const response = await fetch(`${apiUrl}/Users/${id}`, { method: 'DELETE' });
       if (response.ok) {
         setUsers(users.filter(u => u.id !== id));

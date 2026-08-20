@@ -24,13 +24,13 @@ namespace AydMES.Api.Controllers
                 _context.UretimLoglari.Add(yeniLog);
                 await _context.SaveChangesAsync();
 
-                // Ba�ar�l� olursa React'a 200 OK mesaj� g�nder (Bu mesaj pencereyi kapatacak!)
-                return Ok(new { message = "Kay�t ba�ar�yla eklendi." });
+                // Başarılı olursa React'a 200 OK mesajı gönder (Bu mesaj pencereyi kapatacak!)
+                return Ok(new { message = "Kayıt başarıyla eklendi." });
             }
             catch (Exception ex)
             {
-                // Bir hata olursa 500 kodu d�n
-                return StatusCode(500, $"Sunucu hatası: {ex.Message}");
+                // Bir hata olursa 500 kodu dön
+                return StatusCode(500, "Sunucu hatası oluştu. Lütfen tekrar deneyin.");
             }
         }
     }

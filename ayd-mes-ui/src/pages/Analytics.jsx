@@ -1,3 +1,4 @@
+import { API_URL } from '../config/api';
 import { useState, useEffect, useMemo } from 'react';
 import { mockOeeKayitlari, mockDurusKayitlari, mockTrendVerileri } from '../utils/mockData';
 import { excelIndir } from '../utils/excel';
@@ -177,7 +178,7 @@ export default function Analytics({ ayarlar, gosterBildirim, tarihFiltresi }) {
 
   const verileriGetir = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       
       const oeeRes = await fetch(`${apiUrl}/OeeKayitlari`);
       if (oeeRes.ok) {
@@ -213,7 +214,7 @@ export default function Analytics({ ayarlar, gosterBildirim, tarihFiltresi }) {
   const yeniOeeKaydet = async (e) => {
     e.preventDefault();
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const genelOee = Math.round((yeniKayit.kullanilabilirlik * yeniKayit.performans * yeniKayit.kalite) / 10000 * 10) / 10;
       
       const payload = {
@@ -288,7 +289,7 @@ export default function Analytics({ ayarlar, gosterBildirim, tarihFiltresi }) {
     : '0.0';
 
   const toplamDurusDakika = (Array.isArray(filtrelenmisDuruslar) ? filtrelenmisDuruslar : []).reduce((acc, item) => {
-    const min = item.sureDakika ?? item.SureDakika ?? item.durusSuresi ?? item.DurusSuresi ?? 0;
+    const min = item.sure ?? item.Sure ?? item.sureDakika ?? item.SureDakika ?? item.durusSuresi ?? item.DurusSuresi ?? 0;
     return acc + (typeof min === 'number' && !isNaN(min) ? min : 0);
   }, 0);
 

@@ -1,3 +1,4 @@
+import { API_URL } from '../config/api';
 import { useState } from 'react';
 
 export function Badge({ children, tone = 'neutral' }) {
@@ -44,7 +45,7 @@ export function LoginScreen({ onLogin }) {
     }
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const response = await fetch(`${apiUrl}/Auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -163,7 +164,7 @@ export function CalendarModal({ isOpen, onClose, page, tarihFiltresi, setTarihFi
       setBaslangic(start);
       setBitis(end);
     } else if (p === 'Bu Ay') {
-      const firstDay = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
+      const firstDay = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
       const today = d.toISOString().split('T')[0];
       setBaslangic(firstDay);
       setBitis(today);

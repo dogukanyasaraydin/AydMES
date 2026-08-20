@@ -1,3 +1,4 @@
+import { API_URL } from './config/api';
 import { useMemo, useState, useEffect } from 'react';
 import PageContent from './pages/PageContent';
 import { rolePermissions, canEdit } from './utils/permissions';
@@ -28,7 +29,12 @@ const pageMeta = {
 };
 
 // --- GLOBAL FETCH INTERCEPTOR (JWT SECURITY WALL) ---
-const originalFetch = window.fetch;
+if (!window.__fetchIntercepted) {
+  window.__originalFetch = window.fetch;
+  window.__fetchIntercepted = true;
+}
+const originalFetch = window.__originalFetch;
+
 window.fetch = async function (...args) {
   let [resource, config] = args;
   
@@ -116,7 +122,7 @@ export default function App() {
   useEffect(() => {
     const sistemDurumunuKontrolEt = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+        const apiUrl = API_URL;
         const response = await fetch(`${apiUrl}/MakineVerileri`, { method: 'GET' });
         setIsBackendOnline(response.ok);
       } catch {
@@ -150,7 +156,7 @@ export default function App() {
     const isEmriKodu = 'IE-' + Math.floor(100 + Math.random() * 900);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       
       await fetch(`${apiUrl}/UretimLoglari`, {
         method: "POST", headers: { "Content-Type": "application/json" },

@@ -1,14 +1,16 @@
+import { API_URL } from '../config/api';
 import { useState, useEffect } from 'react';
 import { mockUretimPlanlari } from '../utils/mockData';
 import { excelIndir } from '../utils/excel';
 import { pdfRaporuOlustur } from '../utils/pdf';
 import { canEdit } from '../utils/permissions';
 
-function Badge({ children, tone = 'neutral', onClick, style = {} }) {
+function Badge({ children, tone = 'neutral', onClick, style = {}, title }) {
   return (
     <span 
       className={`badge badge-${tone}`} 
       onClick={onClick} 
+      title={title}
       style={{ cursor: onClick ? 'pointer' : 'default', ...style }}
     >
       {children}
@@ -46,7 +48,7 @@ function ResourceList({ isApiActive, gosterBildirim, userRole }) {
     setIslemDurumu('Yükleniyor');
     
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const response = await fetch(`${apiUrl}/UretimPlanlari/Optimize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -150,7 +152,7 @@ export default function Production({ ayarlar, gosterBildirim, userRole }) {
 
   const planlariGetir = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const response = await fetch(`${apiUrl}/UretimPlanlari`);
       if (response.ok) {
         const data = await response.json();
@@ -175,7 +177,7 @@ export default function Production({ ayarlar, gosterBildirim, userRole }) {
     const yeniDurum = durumSirasi[sonrakiIndex];
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const id = plan.id || plan.Id;
       const res = await fetch(`${apiUrl}/UretimPlanlari/${id}`, {
         method: 'PUT',
@@ -195,7 +197,7 @@ export default function Production({ ayarlar, gosterBildirim, userRole }) {
   const planSil = async () => {
     if (!silinecekPlan) return;
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const id = silinecekPlan.id || silinecekPlan.Id;
       const res = await fetch(`${apiUrl}/UretimPlanlari/${id}`, { method: 'DELETE' });
 
@@ -215,7 +217,7 @@ export default function Production({ ayarlar, gosterBildirim, userRole }) {
     e.preventDefault();
     if (!duzenlenecekPlan) return;
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const id = duzenlenecekPlan.id || duzenlenecekPlan.Id;
       const res = await fetch(`${apiUrl}/UretimPlanlari/${id}`, {
         method: 'PUT',
@@ -300,7 +302,7 @@ export default function Production({ ayarlar, gosterBildirim, userRole }) {
                 const durum = plan.durum || plan.Durum || 'Planlandı';
                 const oncelik = plan.oncelik || plan.Oncelik || 'Normal';
                 const isEmri = plan.isEmri || plan.IsEmri || 'İş Emri';
-                const makine = plan.makine || plan.Makine || 'PRES-01';
+                const makine = plan.hat || plan.Hat || plan.makine || plan.Makine || 'PRES-01';
                 const saatAraligi = plan.saatAraligi || plan.SaatAraligi || '08:00 - 16:00';
 
                 const ilerlemeYuzdesi = durum === 'Tamamlandı' ? 100 : (durum === 'Üretimde' ? 65 : 10);
@@ -333,7 +335,7 @@ export default function Production({ ayarlar, gosterBildirim, userRole }) {
                       <Badge 
                         tone={durum === 'Tamamlandı' ? 'success' : (durum === 'Üretimde' ? 'warning' : 'info')}
                         onClick={() => durumGuncelle(plan)}
-                        style={{ title: 'Durumu değiştirmek için tıklayın' }}
+                        title="Durumu değiştirmek için tıklayın"
                       >
                         {durum}
                       </Badge>

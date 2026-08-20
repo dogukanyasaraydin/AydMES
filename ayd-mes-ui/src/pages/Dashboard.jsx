@@ -1,3 +1,4 @@
+import { API_URL } from '../config/api';
 import { useState, useEffect, useRef } from 'react';
 import { mockMakineVerileri, mockOeeKayitlari, mockTrendVerileri, mockOeeDagilimi, mockGorevKayitlari } from '../utils/mockData';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -223,7 +224,7 @@ function TaskTable({ ayarlar, gosterBildirim }) {
   useEffect(() => {
     const gorevleriGetir = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+        const apiUrl = API_URL;
         const response = await fetch(`${apiUrl}/GorevKayitlari`);
         if (response.ok) {
           const data = await response.json();
@@ -242,7 +243,7 @@ function TaskTable({ ayarlar, gosterBildirim }) {
   const gorevKaydet = async (e) => {
     e.preventDefault(); 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const response = await fetch(`${apiUrl}/GorevKayitlari`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(yeniGorev),
@@ -350,7 +351,7 @@ export default function Dashboard({ ayarlar, gosterBildirim, setPage, isBackendO
   useEffect(() => {
     const verileriGetir = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+        const apiUrl = API_URL;
         const resTrend = await fetch(`${apiUrl}/Analiz/UretimTrendi`);
         if (resTrend.ok) setTrendVerileri(await resTrend.json());
 
@@ -512,7 +513,10 @@ export default function Dashboard({ ayarlar, gosterBildirim, setPage, isBackendO
                   <ResponsiveContainer width="100%" height="100%" style={{ position: 'relative', zIndex: 1 }}>
                     <PieChart>
                       <Pie data={oeeVerileri} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                        {oeeVerileri.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.color} />))}
+                        {oeeVerileri.map((entry, index) => {
+                          const COLORS = ['#df0613', '#3182CE', '#38A169'];
+                          return <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />;
+                        })}
                       </Pie>
                       <Tooltip wrapperStyle={{ zIndex: 1000 }} contentStyle={{borderRadius: '4px', border: '1px solid #ddd'}} />
                     </PieChart>

@@ -1,3 +1,4 @@
+import { API_URL } from '../config/api';
 import { useState, useEffect } from 'react';
 import { mockKalipKayitlari } from '../utils/mockData';
 import { canEdit } from '../utils/permissions';
@@ -43,7 +44,7 @@ export default function Molds({ ayarlar, gosterBildirim, userRole }) {
     let isMounted = true;
     const fetchMolds = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+        const apiUrl = API_URL;
         const response = await fetch(`${apiUrl}/KalipKayitlari`);
         if (response.ok && isMounted) {
           const data = await response.json();
@@ -81,7 +82,7 @@ export default function Molds({ ayarlar, gosterBildirim, userRole }) {
 
   const kalipBakimiYap = async (id, kalipKodu) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const response = await fetch(`${apiUrl}/KalipKayitlari/bakim-yap/${id}`, {
         method: "POST"
       });
@@ -100,7 +101,7 @@ export default function Molds({ ayarlar, gosterBildirim, userRole }) {
   const kalipKaydet = async (e) => {
     e.preventDefault(); 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const response = await fetch(`${apiUrl}/KalipKayitlari`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -168,7 +169,7 @@ export default function Molds({ ayarlar, gosterBildirim, userRole }) {
                 </tr>
               ) : (
                 safeKaliplar.map((m) => {
-                  const mevcut = m.mevcutVurus || 0;
+                  const mevcut = m.mevcutVurus || m.vurusSayaci || m.MevcutVurus || 0;
                   const limit = m.bakimLimiti || 150000;
                   const yuzde = Math.min(100, Math.round((mevcut / limit) * 100));
                   const isCritical = yuzde >= 95;

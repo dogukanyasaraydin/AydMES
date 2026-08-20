@@ -16,7 +16,7 @@ export default function PageContent({ page, userRole = 'Yazılım Stajyeri', aya
     return (
       <div className="panel" style={{ padding: '40px', textAlign: 'center', margin: '20px 0' }}>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔒</div>
-        <h2 style={{ margin: '0 0 10px 0', fontSize: '20px' }}>Erişim Kısıtlandıı (Yetkisiz Sayfa)</h2>
+        <h2 style={{ margin: '0 0 10px 0', fontSize: '20px' }}>Erişim Kısıtlandı (Yetkisiz Sayfa)</h2>
         <p style={{ color: '#718096', fontSize: '14px', maxWidth: '480px', margin: '0 auto 24px auto', lineHeight: '1.6' }}>
           Mevcut rolünüz olan <strong style={{ color: '#E53E3E' }}>{userRole}</strong> bu sayfaya erişim yetkisine sahip değildir.
         </p>

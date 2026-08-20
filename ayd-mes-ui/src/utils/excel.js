@@ -18,6 +18,7 @@ export const excelIndir = (data, dosyaAdi, gosterBildirim) => {
   link.download = `${dosyaAdi}_Raporu_${new Date().toLocaleDateString('tr-TR').replace(/\./g, '-')}.csv`;
   document.body.appendChild(link);
   link.click();
+    URL.revokeObjectURL(link.href);
   document.body.removeChild(link);
   
   if (gosterBildirim) gosterBildirim(`${dosyaAdi} başarıyla Excel'e aktarıldı!`, "success");

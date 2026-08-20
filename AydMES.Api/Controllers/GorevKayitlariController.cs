@@ -21,6 +21,15 @@ namespace AydMES.Api.Controllers
         {
             return await _context.GorevKayitlari.ToListAsync();
         }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<GorevKaydi>> GetGorevKaydi(int id)
+        {
+            var kayit = await _context.GorevKayitlari.FindAsync(id);
+            if (kayit == null) return NotFound();
+            return kayit;
+        }
+
         // POST: api/GorevKayitlari
         [HttpPost]
         public async Task<ActionResult<GorevKaydi>> PostGorevKaydi(GorevKaydi gorevKaydi)
@@ -28,7 +37,7 @@ namespace AydMES.Api.Controllers
             _context.GorevKayitlari.Add(gorevKaydi);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetGorevKayitlari", new { id = gorevKaydi.Id }, gorevKaydi);
+            return CreatedAtAction(nameof(GetGorevKaydi), new { id = gorevKaydi.Id }, gorevKaydi);
         }
     }
 }

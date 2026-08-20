@@ -1,3 +1,4 @@
+import { API_URL } from '../config/api';
 import { useState, useEffect, useMemo } from 'react';
 import { mockMakineVerileri } from '../utils/mockData';
 function OeeGauge({ value, size = 110 }) {
@@ -48,7 +49,7 @@ function PresMakineleri({ ayarlar }) {
   useEffect(() => {
     const makineDurumlariniGetir = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+        const apiUrl = API_URL;
         const response = await fetch(`${apiUrl}/MakineVerileri`);
         if (response.ok) {
           const data = await response.json();

@@ -1,3 +1,4 @@
+import { API_URL } from '../config/api';
 import { useState, useEffect, useMemo } from 'react';
 import { mockDurusKayitlari } from '../utils/mockData';
 import { excelIndir } from '../utils/excel';
@@ -55,7 +56,7 @@ export default function Stops({ ayarlar, gosterBildirim, tarihFiltresi, userRole
   useEffect(() => {
     const duruslariGetir = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+        const apiUrl = API_URL;
         const response = await fetch(`${apiUrl}/DurusKayitlari`);
         if (response.ok) {
           const data = await response.json();
@@ -75,7 +76,7 @@ export default function Stops({ ayarlar, gosterBildirim, tarihFiltresi, userRole
   const durusKaydet = async (e) => {
     e.preventDefault();
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:7193/api";
+      const apiUrl = API_URL;
       const response = await fetch(`${apiUrl}/DurusKayitlari`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

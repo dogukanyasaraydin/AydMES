@@ -23,7 +23,7 @@ export default function DateRangePicker({ onFilterChange, ayarlar }) {
       setBitis(end);
       onFilterChange({ baslangic: start, bitis: end, preset });
     } else if (preset === 'Bu Ay') {
-      const firstDay = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
+      const firstDay = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
       const today = d.toISOString().split('T')[0];
       setBaslangic(firstDay);
       setBitis(today);

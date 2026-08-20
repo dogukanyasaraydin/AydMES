@@ -22,6 +22,14 @@ namespace AydMES.Api.Controllers
             return await _context.DefektKayitlari.ToListAsync();
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<DefektKaydi>> GetDefektKaydi(int id)
+        {
+            var kayit = await _context.DefektKayitlari.FindAsync(id);
+            if (kayit == null) return NotFound();
+            return kayit;
+        }
+
         // POST: api/DefektKayitlari
         [HttpPost]
         public async Task<ActionResult<DefektKaydi>> PostDefektKaydi(DefektKaydi defektKaydi)
@@ -29,7 +37,7 @@ namespace AydMES.Api.Controllers
             _context.DefektKayitlari.Add(defektKaydi);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetDefektKayitlari", new { id = defektKaydi.Id }, defektKaydi);
+            return CreatedAtAction(nameof(GetDefektKaydi), new { id = defektKaydi.Id }, defektKaydi);
         }
 
         // PUT: api/DefektKayitlari/5

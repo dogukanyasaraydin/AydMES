@@ -49,16 +49,14 @@ namespace AydMES.Api.Controllers
             }
             catch
             {
-                var makineler = await _context.Makineler.ToListAsync();
-                int toplamVurus = makineler.Sum(m => m.VurusSayisi);
-
+                // Return mock data directly without querying DB
                 return Ok(new List<object>
                 {
-                    new { saat = "08:00", uretim = (int)(toplamVurus * 0.15), durus = 5 },
-                    new { saat = "10:00", uretim = (int)(toplamVurus * 0.35), durus = 10 },
-                    new { saat = "12:00", uretim = (int)(toplamVurus * 0.55), durus = 15 },
-                    new { saat = "14:00", uretim = (int)(toplamVurus * 0.80), durus = 5 },
-                    new { saat = "16:00", uretim = toplamVurus, durus = 0 }
+                    new { saat = "08:00", uretim = 1500, durus = 5 },
+                    new { saat = "10:00", uretim = 3500, durus = 10 },
+                    new { saat = "12:00", uretim = 5500, durus = 15 },
+                    new { saat = "14:00", uretim = 8000, durus = 5 },
+                    new { saat = "16:00", uretim = 10000, durus = 0 }
                 });
             }
         }
