@@ -1,72 +1,154 @@
-# AYD MES Platform (Üretim Yönetim Sistemi)
+# AYD MES — Üretim Yönetim Sistemi
 
-AYD MES, fabrika üretim sahasındaki makine verilerini, OEE (Genel Ekipman Etkinliği) performansını, duruşları ve kalite süreçlerini gerçek zamanlı olarak takip etmeyi sağlayan web tabanlı bir Üretim Yönetim Sistemi (Manufacturing Execution System) yazılımıdır.
+[![CI](https://github.com/dogukanyasaraydin/AydMES/actions/workflows/ci.yml/badge.svg)](https://github.com/dogukanyasaraydin/AydMES/actions/workflows/ci.yml)
+![.NET 8](https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet)
+![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=000)
+![SQL Server](https://img.shields.io/badge/SQL%20Server-EF%20Core%208-CC2927?logo=microsoftsqlserver)
 
-## 🚀 Özellikler
+**🌐 Canlı demo:** https://dogukanyasaraydin.github.io/AydMES/ — kurulum gerektirmez. Giriş ekranındaki *Hızlı Demo Girişi* butonlarından bir rol seçin.
+&nbsp;·&nbsp; 🇬🇧 [English README](README.en.md)
 
-- **Gerçek Zamanlı Makine İzleme:** Fabrikadaki pres vb. makinelerin anlık durumlarını (Çalışıyor, Durdu, Arıza), vuruş sayılarını ve sıcaklık değerlerini canlı olarak takip edebilirsiniz.
-- **OEE Analizi ve Dashboard:** Üretim trendlerini, canlı OEE verilerini ve makine performanslarını özet grafiklerle tek ekranda inceleme.
-- **Üretim Planlama ve Optimizasyon:** Vardiyalık iş emirlerini (ürün, hat, hedef sayı) oluşturma, planlama ve durumlarını takip etme.
-- **Duruş (Downtime) Yönetimi:** Planlı ve plansız duruşları kaydetme, nedenlerini raporlama.
-- **Kalıp ve Bakım Yönetimi:** Üretimde kullanılan kalıpların vuruş ömürlerini izleme ve bakım/revizyon süreçlerini yönetme.
-- **Kalite Kontrol:** Hatalı ürün (defekt) girişleri yapma ve parti bazlı kalite onay süreçlerini işletme.
-- **Fabrika Telemetri Haritası:** Tesis içerisindeki makine yerleşimlerine göre canlı performans renk haritalaması.
-- **Çevrimdışı (Offline) Demo Modu:** Backend kapalı olduğunda sistemin otomatik olarak Sahte (Mock) verilerle "Sistem Çevrimdışı" moduna geçip tam teşekküllü çalışmaya devam etmesi. Akıllı Timeout yapısıyla donmaları engeller.
+AYD MES, pres hatları olan bir fabrikada makine telemetrisini, OEE'yi, duruşları, kalıp ömrünü ve kalite süreçlerini gerçek zamanlı izleyen web tabanlı bir **Manufacturing Execution System**'dir. React ile yazılmış tek sayfalık arayüz, JWT ile korunan bir ASP.NET Core 8 REST API'si ve SQL Server veritabanından oluşur. Arka planda çalışan bir simülasyon servisi, makinelerden canlı veri geliyormuş gibi üretim verisi üretir.
+
+![Genel Bakış](docs/screenshots/02-genel-bakis.webp)
+
+## ✨ Öne Çıkanlar
+
+| | |
+|---|---|
+| **Gerçek zamanlı izleme** | Makine durumu, vuruş sayısı, sıcaklık, fire oranı; ayarlanabilir aralıklarla canlı yenilenir. |
+| **OEE analizi** | Kullanılabilirlik × Performans × Kalite hesabı, makine karşılaştırma ve üretim trend grafikleri (Recharts). |
+| **Dijital ikiz** | Fabrika yerleşimini 2D kuş bakışı ve 3D izometrik görünümde makine durumlarıyla gösterir. |
+| **Üretim simülasyonu** | `BackgroundService`, çalışan makinelere 3 saniyede bir vuruş ekler, %4 olasılıkla fire üretir ve hedefe ulaşan iş emrini kapatır. |
+| **Rol bazlı yetkilendirme** | 5 rol (Fabrika Müdürü, Kalite Mühendisi, Operatör…). Menü ve işlemler frontend'de, uç noktalar API'de rol ile kısıtlanır. |
+| **Güvenlik** | JWT (issuer/audience/süre doğrulamalı), PBKDF2 ile hashlenmiş şifreler; imza anahtarı kaynak kodda değil yapılandırmada durur. Tüm uç noktalar varsayılan olarak kimlik doğrulama ister. |
+| **Çevrimdışı mod** | Backend'e ulaşılamazsa arayüz zaman aşımıyla bunu algılar ve donmadan örnek verilerle çalışmaya devam eder. |
+| **Raporlama** | PDF rapor çıktısı ve Excel'e aktarma; açık/koyu tema. |
+
+## 🖼️ Ekran Görüntüleri
+
+| Giriş | Dijital İkiz Haritası |
+|---|---|
+| ![Giriş](docs/screenshots/01-giris.webp) | ![Fabrika Haritası](docs/screenshots/03-fabrika-haritasi.webp) |
+| **OEE & Analiz** | **Üretim Planlama** |
+| ![OEE](docs/screenshots/06-oee-analiz.webp) | ![Üretim Planlama](docs/screenshots/04-uretim-planlama.webp) |
+| **Pres Makineleri** | **Kalite Kontrol** |
+| ![Makineler](docs/screenshots/05-pres-makineleri.webp) | ![Kalite](docs/screenshots/07-kalite-kontrol.webp) |
+
+## 🏗️ Mimari
+
+```mermaid
+flowchart LR
+    subgraph Tarayici["Tarayıcı — React 19 + Vite"]
+        UI["Sayfalar<br/>Dashboard · OEE · Harita · Kalite …"]
+        FI["Fetch katmanı<br/>JWT ekleme · zaman aşımı · çevrimdışı algılama"]
+        MOCK[("Mock veri<br/>(çevrimdışı mod)")]
+        UI --> FI
+        FI -. backend yoksa .-> MOCK
+    end
+
+    subgraph API["ASP.NET Core 8 Web API"]
+        AUTH["AuthController<br/>JWT üretimi"]
+        CTRL["13 REST controller<br/>Makine · OEE · Duruş · Kalıp · Kalite …"]
+        SIM["UretimSimulasyonService<br/>(BackgroundService, 3 sn)"]
+        EF["EF Core 8 · MesDbContext"]
+        AUTH --> EF
+        CTRL --> EF
+        SIM --> EF
+    end
+
+    DB[("SQL Server")]
+
+    FI -- "HTTP + Bearer JWT" --> AUTH
+    FI -- "HTTP + Bearer JWT" --> CTRL
+    EF --> DB
+```
 
 ## 🛠️ Teknolojiler
 
-Bu proje iki ana katmandan oluşmaktadır:
-1. **Frontend (Kullanıcı Arayüzü):** React.js, Vite, CSS (Responsive & Dark Mode Destekli)
-2. **Backend (Sunucu ve API):** C# .NET 8 (RESTful API), Entity Framework Core
-3. **Veritabanı:** Microsoft SQL Server (MSSQL)
+- **Frontend:** React 19, Vite, Recharts, responsive CSS (açık/koyu tema)
+- **Backend:** C# / .NET 8 Web API, Entity Framework Core 8 (Code-First, migration'lar), JWT Bearer kimlik doğrulama, Swagger/OpenAPI
+- **Veritabanı:** Microsoft SQL Server
+- **CI/CD:** GitHub Actions. Her push'ta backend build ve frontend lint + build çalışır; canlı demo GitHub Pages'e otomatik yayınlanır.
+
+## 📁 Proje Yapısı
+
+```
+AydMES.Api/                 ASP.NET Core 8 Web API
+├── Controllers/            REST uç noktaları (Auth, MakineVerileri, OeeKayitlari, …)
+├── Data/VeriTohumlayici.cs İlk açılışta şema onarımı + örnek veri
+├── Migrations/             EF Core migration'ları
+├── Models/                 Entity sınıfları ve MesDbContext
+├── Security/               JWT ayarları, şifre hashleme, rol sabitleri
+└── Services/               Üretim simülasyonu (BackgroundService)
+ayd-mes-ui/                 React + Vite SPA
+├── src/pages/              Dashboard, Analytics, FactoryMap, Production, Quality, …
+├── src/components/         Uygulama kabuğu, giriş ekranı, modallar
+└── src/utils/              Yetki tablosu, PDF/Excel çıktısı, mock veriler
+```
 
 ## 📦 Kurulum ve Çalıştırma
 
-Projeyi yerel bilgisayarınızda çalıştırmak için aşağıdaki adımları izleyebilirsiniz.
+**Gereksinimler:** .NET 8 SDK, Node.js 20+, SQL Server (LocalDB yeterlidir)
 
-### 1. Frontend (React Uygulaması)
-Terminal veya komut satırını açıp `ayd-mes-ui` klasörüne gidin:
+### 1. Veritabanı
+```bash
+dotnet tool install --global dotnet-ef
+```
+```bash
+cd AydMES.Api
+dotnet ef database update
+```
+Bağlantı cümlesi `AydMES.Api/appsettings.json` içindedir (varsayılan: `(localdb)\MSSQLLocalDB`).
+
+### 2. Backend
+```bash
+cd AydMES.Api
+dotnet run
+```
+API `http://localhost:5139` adresinde açılır. Swagger arayüzü `http://localhost:5139/swagger` adresindedir.
+
+### 3. Frontend
 ```bash
 cd ayd-mes-ui
 npm install
 npm run dev
 ```
-Uygulama varsayılan olarak `http://localhost:5173` adresinde çalışacaktır.
+Uygulama `http://localhost:5173` adresinde açılır.
 
-### 2. Backend (C# API Uygulaması)
-Visual Studio üzerinden veya terminal kullanarak `AydMES.Api` klasörüne gidin:
-```bash
-cd AydMES.Api
-dotnet build
-dotnet run
-```
-API varsayılan olarak `http://localhost:5139` adresinde ayağa kalkacaktır.
+### Demo hesapları
+İlk açılışta otomatik oluşturulur (şifreler hashlenerek saklanır):
 
-### 3. Veritabanı
-Proje Code-First yaklaşımı ile yazılmıştır. `AydMES.Api` dizinindeyken aşağıdaki komutu çalıştırarak MSSQL üzerinde gerekli veritabanı tablolarını oluşturabilirsiniz:
-```bash
-dotnet ef database update
-```
+| Kullanıcı | Şifre | Rol |
+|---|---|---|
+| `dogukan` | `123` | Yazılım Stajyeri |
+| `ahmet` | `demo123` | Fabrika Müdürü |
+| `ayse` | `demo123` | Kalite Mühendisi |
+| `mehmet` | `demo123` | Operatör |
 
-## ⚠️ Sık Karşılaşılan Hatalar ve Çözümleri
+Giriş ekranındaki *Hızlı Demo Girişi* butonları backend açıksa bu hesaplarla gerçek JWT girişi yapar. Backend kapalıysa çevrimdışı modda açılır.
 
-**1. "Belirtilen komut veya dosya bulunamadı (dotnet-ef)" Hatası**
-Veritabanını oluştururken `dotnet ef database update` komutu hata veriyorsa, Entity Framework CLI aracının sisteminizde yüklü olmamasından kaynaklanır. Önce şu komutla aracı kurun:
-```bash
-dotnet tool install --global dotnet-ef
-```
-Ardından `database update` komutunu tekrar çalıştırın.
+## ⚙️ Yapılandırma
 
-**2. Frontend Giriş Ekranında "Sunucuya bağlanılamadı" Hatası**
-Bunun başlıca iki sebebi olabilir:
-- **Backend çalışmıyordur:** `AydMES.Api` klasöründe `dotnet run` komutuyla sunucuyu başlattığınızdan emin olun.
-- **HTTPS Sertifika Sorunu (CORS/Fetch failed):** Tarayıcı yerel geliştirme sertifikasını engelliyor olabilir. Çözüm olarak `ayd-mes-ui` klasörünün içine `.env` isimli bir dosya oluşturup içine şu satırı ekleyin (böylece sistem otomatik olarak güvenilir HTTP portunu kullanacaktır):
-  ```text
-  VITE_API_URL=http://localhost:5139/api
-  ```
-  Ardından `npm run dev` komutunu durdurup tekrar başlatın.
+| Ayar | Nerede | Açıklama |
+|---|---|---|
+| `Jwt:Key` | `appsettings.Development.json` / ortam değişkeni `Jwt__Key` | JWT imza anahtarı (en az 32 karakter). Geliştirme anahtarı yalnızca Development ortamında tanımlıdır. Üretimde ortam değişkeni veya `dotnet user-secrets` ile verin. |
+| `ConnectionStrings:DefaultConnection` | `appsettings.json` | SQL Server bağlantısı |
+| `Cors:AllowedOrigins` | `appsettings.json` | Frontend adres(ler)i |
+| `VITE_API_URL` | `ayd-mes-ui/.env` | API adresi (varsayılan `http://localhost:5139/api`) |
+| `VITE_DEMO_MODE` | derleme ortamı | `true` olursa backend'e hiç istek atılmaz (canlı demo) |
+
+## ⚠️ Sık Karşılaşılan Hatalar
+
+**"dotnet-ef bulunamadı":** `dotnet tool install --global dotnet-ef` komutunu çalıştırıp terminali yeniden açın.
+
+**Girişte "Sunucuya bağlanılamadı":**
+- Backend'in (`dotnet run`) çalıştığından emin olun.
+- Tarayıcı yerel HTTPS sertifikasını engelliyorsa `ayd-mes-ui/.env` dosyasına `VITE_API_URL=http://localhost:5139/api` satırını ekleyip `npm run dev`'i yeniden başlatın.
+
+**API "Jwt:Key yapılandırılmamış" hatasıyla açılmıyor:** API'yi `Development` ortamında çalıştırın (`dotnet run` bunu `launchSettings.json` üzerinden zaten yapar) ya da `Jwt__Key` ortam değişkenini tanımlayın.
 
 ## 🤝 İletişim & Telif Hakkı
-Bu proje portfolyo amaçlı geliştirilmiş kapalı kaynaklı (özel) bir projedir. **Tüm telif hakları saklıdır.** Projenin kaynak kodları, tasarımı veya herhangi bir parçası izinsiz olarak başka bir yerde **kullanılamaz, kopyalanamaz, çoğaltılamaz veya ticari amaçlarla satılamaz.** Sadece inceleme (portfolyo) amacıyla görüntülenmesine izin verilmiştir. 
+Bu proje portfolyo amacıyla geliştirilmiş, kaynak kodu görüntülenebilir ama açık kaynak lisanslı olmayan bir projedir. **Tüm hakları saklıdır.** Kaynak kodu, tasarımı veya herhangi bir parçası izinsiz **kullanılamaz, kopyalanamaz, çoğaltılamaz ve ticari amaçla satılamaz.** Yalnızca inceleme (portfolyo) amacıyla görüntülenebilir.
 
 *Geliştirici:* **Doğukan Yaşar Aydın**

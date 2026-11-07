@@ -1,0 +1,49 @@
+name: Canlı Demo (GitHub Pages)
+
+# Frontend'i backend'siz "demo modu"nda derleyip GitHub Pages'e yayınlar.
+# Bir kerelik kurulum: Settings → Pages → Source: "GitHub Actions".
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ayd-mes-ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ayd-mes-ui/package-lock.json
+      - run: npm ci
+      - run: npm run build
+        env:
+          VITE_DEMO_MODE: "true"
+          VITE_BASE: /${{ github.event.repository.name }}/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ayd-mes-ui/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

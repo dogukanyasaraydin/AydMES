@@ -1,5 +1,5 @@
 import { API_URL } from '../config/api';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { mockOeeKayitlari, mockDurusKayitlari, mockTrendVerileri } from '../utils/mockData';
 import { excelIndir } from '../utils/excel';
 
@@ -206,9 +206,10 @@ export default function Analytics({ ayarlar, gosterBildirim, tarihFiltresi }) {
   };
 
   useEffect(() => {
-    verileriGetir();
-    const interval = setInterval(verileriGetir, ayarlar?.yenilemeHizi || 3000); 
-    return () => clearInterval(interval);
+    // İlk yükleme de zamanlayıcı üzerinden yapılır (effect içinde doğrudan setState yerine)
+    const ilkYukleme = setTimeout(verileriGetir, 0);
+    const interval = setInterval(verileriGetir, ayarlar?.yenilemeHizi || 3000);
+    return () => { clearTimeout(ilkYukleme); clearInterval(interval); };
   }, [ayarlar?.yenilemeHizi]);
 
   const yeniOeeKaydet = async (e) => {

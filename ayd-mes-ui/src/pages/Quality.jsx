@@ -72,9 +72,10 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi, userRo
   };
 
   useEffect(() => {
-    verileriGetir();
+    // İlk yükleme de zamanlayıcı üzerinden yapılır (effect içinde doğrudan setState yerine)
+    const ilkYukleme = setTimeout(verileriGetir, 0);
     const timer = setInterval(verileriGetir, ayarlar?.yenilemeHizi || 5000);
-    return () => clearInterval(timer);
+    return () => { clearTimeout(ilkYukleme); clearInterval(timer); };
   }, [ayarlar?.yenilemeHizi]);
 
   useEffect(() => {

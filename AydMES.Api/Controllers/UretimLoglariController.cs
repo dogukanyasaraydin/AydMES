@@ -27,7 +27,7 @@ namespace AydMES.Api.Controllers
                 // Başarılı olursa React'a 200 OK mesajı gönder (Bu mesaj pencereyi kapatacak!)
                 return Ok(new { message = "Kayıt başarıyla eklendi." });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Bir hata olursa 500 kodu dön
                 return StatusCode(500, "Sunucu hatası oluştu. Lütfen tekrar deneyin.");

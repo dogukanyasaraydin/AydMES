@@ -28,7 +28,7 @@ nav { display: grid; gap: 4px; }.nav-item { width: 100%; display: flex; gap: 12p
 /* AYD kırmızısı ve daha yüksek metin kontrastı */
 :root { color: #111827; background: #f7f7f8; }
 .brand-mark { background: linear-gradient(145deg,#ee2532,#c6000b); }.brand strong { color: #d40511; }.brand small { color: #657287; }
-.nav-item { color: #3f4c60; }.nav-item:hover { color: #d40511; background: #fff1f2; }.nav-item.active { background: linear-gradient(115deg,#e30613,#be000b); box-shadow: 0 7px 16px rgba(227,6,19,.2); }
+.nav-item { color: #3f4c60; }.nav-item:hover { color: #d40511; background: #fff1f2; }.nav-item.active { background: linear-gradient(115deg,#e30613,#be000b); box-shadow: 0 7px 16px rgba(227,6,19,.2); }.nav-item.active:hover { color: #fff; }
 .page-heading h1,.kpi > strong,.donut strong { color: #111827; }.page-heading p,.kpi > span,.kpi-top,.legend p { color: #506076; }.panel-head > div h2 { color: #1f2937; }.primary-button { border-color: #d40511; background: #d40511; box-shadow: 0 4px 10px rgba(212,5,17,.2); }.text-action { color: #d40511; }.tabs .selected { color: #c9000b; }.machine-icon { color: #d40511; background: #fff0f1; }.compare-bar span,.bar.active span,.loss-bar .blue { background: #df0613; }.bar span { background: #fde1e3; }.donut { background: conic-gradient(#df0613 0 57%,#0dbaa8 57% 78%,#f7ad2e 78% 92%,#e8edf3 92%); }.blue { background: #df0613; }
 td { color: #4d5b70; } td strong,.machine-head h3,.machine-metrics strong,.defect-list strong,.approval-list strong { color: #263449; }.machine-head small,.machine-foot small,.defect-list small,.approval-list small { color: #64748b; }
 

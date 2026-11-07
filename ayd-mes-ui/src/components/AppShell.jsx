@@ -1,4 +1,4 @@
-import { API_URL } from '../config/api';
+import { API_URL, DEMO_MODE } from '../config/api';
 import { useState } from 'react';
 
 export function Badge({ children, tone = 'neutral' }) {
@@ -38,6 +38,23 @@ export function LoginScreen({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
+  // Backend'e giriş isteği atar. Başarılıysa JWT'yi saklar ve true döner;
+  // hatalı şifrede false döner; sunucuya ulaşılamazsa hata fırlatır.
+  const apiGirisi = async (kullaniciAdi, sifre) => {
+    const response = await fetch(`${API_URL}/Auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: kullaniciAdi, password: sifre })
+    });
+    if (!response.ok) return false;
+    const data = await response.json();
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('role', data.role);
+    localStorage.setItem('username', data.username);
+    onLogin(data.role, data.username);
+    return true;
+  };
+
   const submit = async (event) => {
     event.preventDefault();
     if (!username.trim() || !password.trim()) {
@@ -45,25 +62,26 @@ export function LoginScreen({ onLogin }) {
     }
 
     try {
-      const apiUrl = API_URL;
-      const response = await fetch(`${apiUrl}/Auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('role', data.role);
-        localStorage.setItem('username', data.username);
-        onLogin(data.role);
-      } else {
+      if (!(await apiGirisi(username, password))) {
         setError('Hatalı kullanıcı adı veya şifre! (Deneme: dogukan / 123)');
       }
     } catch {
-      setError('Sunucuya bağlanılamadı. Backend (C#) açık mı?');
+      setError(DEMO_MODE
+        ? 'Canlı demoda backend yok. Aşağıdaki hızlı demo girişini kullanın.'
+        : 'Sunucuya bağlanılamadı. Backend (C#) açık mı?');
     }
+  };
+
+  // Hızlı demo: backend açıksa seed edilmiş demo hesabıyla gerçek JWT girişi yapılır,
+  // kapalıysa (veya canlı demoda) çevrimdışı modda seçilen rolle devam edilir.
+  const demoGirisi = async (rol, adSoyad, kullaniciAdi, sifre) => {
+    localStorage.removeItem('token');
+    try {
+      if (await apiGirisi(kullaniciAdi, sifre)) return;
+    } catch {
+      // Backend kapalı → çevrimdışı demo
+    }
+    onLogin(rol, adSoyad);
   };
 
   return (
@@ -104,28 +122,28 @@ export function LoginScreen({ onLogin }) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px' }}>
               <button 
                 type="button" 
-                onClick={() => onLogin('Fabrika Müdürü', 'Ahmet Yılmaz')}
+                onClick={() => demoGirisi('Fabrika Müdürü', 'Ahmet Yılmaz', 'ahmet', 'demo123')}
                 style={{ padding: '8px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid #E2E8F0', backgroundColor: '#FFF5F5', color: '#C53030', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}
               >
                 👨‍💼 Fabrika Müdürü
               </button>
               <button 
                 type="button" 
-                onClick={() => onLogin('Kalite Mühendisi', 'Ayşe Demir')}
+                onClick={() => demoGirisi('Kalite Mühendisi', 'Ayşe Demir', 'ayse', 'demo123')}
                 style={{ padding: '8px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid #E2E8F0', backgroundColor: '#E6FFFA', color: '#2C7A7B', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}
               >
                 🔬 Kalite Mühendisi
               </button>
               <button 
                 type="button" 
-                onClick={() => onLogin('Operatör', 'Mehmet Kaya')}
+                onClick={() => demoGirisi('Operatör', 'Mehmet Kaya', 'mehmet', 'demo123')}
                 style={{ padding: '8px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid #E2E8F0', backgroundColor: '#EBF8FF', color: '#2B6CB0', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}
               >
                 ⚙️ Operatör
               </button>
               <button 
                 type="button" 
-                onClick={() => onLogin('Yazılım Stajyeri', 'Doğukan Aydın')}
+                onClick={() => demoGirisi('Yazılım Stajyeri', 'Doğukan Aydın', 'dogukan', '123')}
                 style={{ padding: '8px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid #E2E8F0', backgroundColor: '#FAF5FF', color: '#6B46C1', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}
               >
                 👨‍💻 Yazılım Stajyeri

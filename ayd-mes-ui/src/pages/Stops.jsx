@@ -1,5 +1,5 @@
 import { API_URL } from '../config/api';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { mockDurusKayitlari } from '../utils/mockData';
 import { excelIndir } from '../utils/excel';
 import { pdfRaporuOlustur } from '../utils/pdf';
