@@ -1,6 +1,37 @@
-@AydMES.Api_HostAddress = http://localhost:5139
+# Visual Studio / VS Code (REST Client) ile API'yi hızlıca denemek için örnek istekler.
+# Önce "Giriş" isteğini çalıştırın; oturum cookie'si sonraki isteklerde otomatik kullanılır.
 
-GET {{AydMES.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+@host = http://localhost:5139
 
-###
+### Sağlık kontrolü (giriş gerektirmez)
+GET {{host}}/api/health
+
+### Giriş (demo hesabı)
+POST {{host}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "username": "ahmet",
+  "password": "demo123"
+}
+
+### Oturum bilgisi
+GET {{host}}/api/Auth/oturum
+
+### Makineler
+GET {{host}}/api/MakineVerileri
+
+### Üretim başlat
+POST {{host}}/api/MakineVerileri/baslat
+Content-Type: application/json
+
+{
+  "makineKod": "PRES-01",
+  "hedefVurus": 500
+}
+
+### OEE dağılımı
+GET {{host}}/api/Analiz/OeeDagilimi
+
+### Çıkış
+POST {{host}}/api/Auth/logout
