@@ -454,7 +454,7 @@ export default function Dashboard({ ayarlar, gosterBildirim, isBackendOnline = t
     };
     window.addEventListener('app-pdf-export', handlePdfExport);
     return () => window.removeEventListener('app-pdf-export', handlePdfExport);
-  }, [canliMakineler, anlikOeeOrtalama]);
+  }, [canliMakineler, anlikOeeOrtalama, gosterBildirim]);
 
   const grafikVerisi = canliTrendGecmisi.length >= 2 ? canliTrendGecmisi : trendVerileri;
 

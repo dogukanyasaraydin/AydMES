@@ -282,7 +282,7 @@ export default function Analytics({ ayarlar, gosterBildirim, tarihFiltresi }) {
     };
     window.addEventListener('app-excel-export', handleExcelExport);
     return () => window.removeEventListener('app-excel-export', handleExcelExport);
-  }, [filtrelenmisOee]);
+  }, [filtrelenmisOee, gosterBildirim]);
 
   const validOeeList = (Array.isArray(filtrelenmisOee) ? filtrelenmisOee : []).map(item => getOeeValue(item));
   const ortOee = validOeeList.length > 0 

@@ -36,15 +36,16 @@ export function LoginScreen({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [beniHatirla, setBeniHatirla] = useState(false);
   const [error, setError] = useState('');
 
   // Backend'e giriş isteği atar. Başarılıysa sunucu JWT'yi httpOnly cookie olarak ayarlar ve true döner;
   // hatalı şifrede false döner; çok fazla denemede (429) uyarı verir; sunucuya ulaşılamazsa hata fırlatır.
-  const apiGirisi = async (kullaniciAdi, sifre) => {
+  const apiGirisi = async (kullaniciAdi, sifre, hatirla = false) => {
     const response = await fetch(`${API_URL}/Auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: kullaniciAdi, password: sifre })
+      body: JSON.stringify({ username: kullaniciAdi, password: sifre, beniHatirla: hatirla })
     });
     if (response.status === 429) {
       setError('Çok fazla hatalı deneme. Lütfen 1 dakika sonra tekrar deneyin.');
@@ -65,7 +66,7 @@ export function LoginScreen({ onLogin }) {
     }
 
     try {
-      if ((await apiGirisi(username, password)) === false) {
+      if ((await apiGirisi(username, password, beniHatirla)) === false) {
         setError('Hatalı kullanıcı adı veya şifre! (Deneme: dogukan / 123)');
       }
     } catch {
@@ -117,7 +118,7 @@ export function LoginScreen({ onLogin }) {
           <label>Kullanıcı adı<input value={username} onChange={(event) => { setUsername(event.target.value); setError(''); }} placeholder="Sicil no (Örn: dogukan)" autoComplete="username" /></label>
           <label>Şifre<div className="password-field"><input type={showPassword ? 'text' : 'password'} value={password} onChange={(event) => { setPassword(event.target.value); setError(''); }} placeholder="Şifreniz (Örn: 123)" autoComplete="current-password" /><button type="button" onClick={() => setShowPassword(!showPassword)}>{showPassword ? 'Gizle' : 'Göster'}</button></div></label>
           {error && <p className="login-error">{error}</p>}
-          <div className="login-options"><label className="remember"><input type="checkbox" /> Beni hatırla</label><button type="button" className="forgot">Şifremi unuttum</button></div>
+          <div className="login-options"><label className="remember"><input type="checkbox" checked={beniHatirla} onChange={(event) => setBeniHatirla(event.target.checked)} /> Beni hatırla</label></div>
           <button className="login-button" type="submit">Giriş yap <span>→</span></button>
           
           <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px solid #E2E8F0', textAlign: 'center' }}>

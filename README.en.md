@@ -22,7 +22,7 @@ AYD MES is a web-based **Manufacturing Execution System** for a press-line facto
 - **Production simulation:** a .NET `BackgroundService` adds strokes to running machines every 3 seconds, produces scrap with 4% probability and closes the work order when its target is reached.
 - **Role-based access control:** 5 roles (Plant Manager, Quality Engineer, Operator…). Menus are restricted in the UI and actions in the API. Operators can read but not modify data: a single convention requires an editor role on every non-GET endpoint.
 - **Security:** the JWT is carried in an httpOnly, SameSite=Strict cookie, so XSS can't steal it. Passwords are hashed with PBKDF2. Login is rate-limited (5 attempts per minute per IP). All input is validated. Production enforces HTTPS and HSTS. No secrets are stored in the repository. Every endpoint requires authentication by default.
-- **Automated tests:** 15 xUnit integration tests cover authentication, role restrictions, rate limiting, input validation and the production flow, and run in CI on every push.
+- **Automated tests:** 17 xUnit integration tests cover authentication, role restrictions, rate limiting, input validation and the production flow, and run in CI on every push.
 - **Offline mode:** if the API can't be reached, the UI detects it through timeouts and keeps working with sample data instead of hanging.
 - **Reporting:** PDF report export, Excel export, light and dark themes.
 

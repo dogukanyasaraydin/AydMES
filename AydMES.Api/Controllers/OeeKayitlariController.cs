@@ -20,63 +20,55 @@ namespace AydMES.Api.Controllers
         [HttpGet]
         public async Task<ActionResult> GetOeeKayitlari()
         {
-            try
+            // 1) Önce OeeKayitlari tablosuna bak
+            var kayitlar = await _context.OeeKayitlari.ToListAsync();
+            if (kayitlar.Count > 0)
             {
-                // 1) Önce OeeKayitlari tablosuna bak
-                var kayitlar = await _context.OeeKayitlari.ToListAsync();
-                if (kayitlar.Count > 0)
-                {
-                    // Frontend'in beklediği property adlarıyla dön
-                    var result = kayitlar.Select(k => new {
-                        id = k.Id,
-                        makineKod = k.MakineKod,
-                        kullanilabilirlik = k.Kullanilabilirlik,
-                        performans = k.Performans,
-                        kalite = k.Kalite,
-                        oee = k.GenelOee
-                    });
-                    return Ok(result);
-                }
-
-                // 2) OeeKayitlari boşsa -> Makineler tablosundan canlı hesapla
-                var makineler = await _context.Makineler.ToListAsync();
-                if (!makineler.Any())
-                {
-                    return Ok(new List<object>());
-                }
-
-                var canliOeeListesi = makineler.Select(m =>
-                {
-                    bool isCalisiyor = m.Durum == "Çalışıyor";
-                    bool isBakim = m.Durum == "Bakımda";
-
-                    double kullanilabilirlik = isCalisiyor ? 95.0 : (isBakim ? 0.0 : 85.0);
-                    double performans = m.VurusSayisi > 0
-                        ? Math.Min(99.0, Math.Max(70.0, 75.0 + (m.VurusSayisi % 24)))
-                        : 0.0;
-                    double kalite = m.VurusSayisi > 0
-                        ? Math.Round((double)(m.VurusSayisi - (m.HataliAdet ?? 0)) / m.VurusSayisi * 100, 1)
-                        : 100.0;
-                    double oee = Math.Round((kullanilabilirlik * performans * kalite) / 10000, 1);
-
-                    return new
-                    {
-                        id = m.Id,
-                        makineKod = m.Kod,
-                        kullanilabilirlik = kullanilabilirlik,
-                        performans = performans,
-                        kalite = kalite,
-                        oee = oee
-                    };
-                }).ToList();
-
-                return Ok(canliOeeListesi);
+                // Frontend'in beklediği property adlarıyla dön
+                var result = kayitlar.Select(k => new {
+                    id = k.Id,
+                    makineKod = k.MakineKod,
+                    kullanilabilirlik = k.Kullanilabilirlik,
+                    performans = k.Performans,
+                    kalite = k.Kalite,
+                    oee = k.GenelOee
+                });
+                return Ok(result);
             }
-            catch (Exception ex)
+
+            // 2) OeeKayitlari boşsa -> Makineler tablosundan canlı hesapla
+            var makineler = await _context.Makineler.ToListAsync();
+            if (!makineler.Any())
             {
-                Console.WriteLine($"OeeKayitlari Hata: {ex.Message}");
                 return Ok(new List<object>());
             }
+
+            var canliOeeListesi = makineler.Select(m =>
+            {
+                bool isCalisiyor = m.Durum == "Çalışıyor";
+                bool isBakim = m.Durum == "Bakımda";
+
+                double kullanilabilirlik = isCalisiyor ? 95.0 : (isBakim ? 0.0 : 85.0);
+                double performans = m.VurusSayisi > 0
+                    ? Math.Min(99.0, Math.Max(70.0, 75.0 + (m.VurusSayisi % 24)))
+                    : 0.0;
+                double kalite = m.VurusSayisi > 0
+                    ? Math.Round((double)(m.VurusSayisi - (m.HataliAdet ?? 0)) / m.VurusSayisi * 100, 1)
+                    : 100.0;
+                double oee = Math.Round((kullanilabilirlik * performans * kalite) / 10000, 1);
+
+                return new
+                {
+                    id = m.Id,
+                    makineKod = m.Kod,
+                    kullanilabilirlik = kullanilabilirlik,
+                    performans = performans,
+                    kalite = kalite,
+                    oee = oee
+                };
+            }).ToList();
+
+            return Ok(canliOeeListesi);
         }
 
         // POST: api/OeeKayitlari

@@ -53,7 +53,8 @@ namespace AydMES.Api.Controllers
                 new Claim(ClaimTypes.Role, user.Rol)
             };
 
-            var bitis = DateTime.UtcNow.AddHours(_jwt.SureSaat);
+            // "Beni hatırla": tarayıcı kapansa da 7 gün geçerli kalıcı cookie; aksi halde tarayıcı kapanınca silinen oturum cookie'si
+            var bitis = request.BeniHatirla ? DateTime.UtcNow.AddDays(_jwt.HatirlaGun) : DateTime.UtcNow.AddHours(_jwt.SureSaat);
             var token = new JwtSecurityToken(
                 issuer: _jwt.Issuer,
                 audience: _jwt.Audience,
@@ -64,7 +65,7 @@ namespace AydMES.Api.Controllers
 
             // Token gövdede değil, JavaScript'in okuyamadığı httpOnly cookie'de döner
             Response.Cookies.Append(OturumCerezi.Ad, new JwtSecurityTokenHandler().WriteToken(token),
-                OturumCerezi.Secenekler(Request, bitis));
+                OturumCerezi.Secenekler(Request, request.BeniHatirla ? bitis : null));
 
             return Ok(new
             {
@@ -72,6 +73,17 @@ namespace AydMES.Api.Controllers
                 username = user.AdSoyad
             });
         }
+
+        /// <summary>
+        /// Sayfa yenilendiğinde frontend mevcut oturumu buradan geri yükler.
+        /// Geçerli cookie yoksa 401 döner (kimlik doğrulama zorunlu).
+        /// </summary>
+        [HttpGet("oturum")]
+        public IActionResult Oturum() => Ok(new
+        {
+            role = User.FindFirstValue(ClaimTypes.Role),
+            username = User.FindFirstValue(ClaimTypes.Name)
+        });
 
         [AllowAnonymous]
         [HttpPost("logout")]
@@ -90,5 +102,7 @@ namespace AydMES.Api.Controllers
 
         [MetinSiniri(128)]
         public string? Password { get; set; }
+
+        public bool BeniHatirla { get; set; }
     }
 }

@@ -18,20 +18,10 @@ namespace AydMES.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> PostUretimLog([FromBody] UretimLog yeniLog)
         {
-            try
-            {
-                // React'tan gelen veriyi SQL tablosuna ekliyoruz
-                _context.UretimLoglari.Add(yeniLog);
-                await _context.SaveChangesAsync();
-
-                // Başarılı olursa React'a 200 OK mesajı gönder (Bu mesaj pencereyi kapatacak!)
-                return Ok(new { message = "Kayıt başarıyla eklendi." });
-            }
-            catch (Exception)
-            {
-                // Bir hata olursa 500 kodu dön
-                return StatusCode(500, "Sunucu hatası oluştu. Lütfen tekrar deneyin.");
-            }
+            // React'tan gelen veriyi tabloya ekle (hatalar genel hata yakalayıcıda loglanır)
+            _context.UretimLoglari.Add(yeniLog);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Kayıt başarıyla eklendi." });
         }
     }
 }

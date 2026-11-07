@@ -1,5 +1,5 @@
 import { API_URL, DEMO_MODE } from './config/api';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import PageContent from './pages/PageContent';
 import { rolePermissions, canEdit } from './utils/permissions';
 import { Toast, LoginScreen, CalendarModal, AyarlarModal } from './components/AppShell';
@@ -47,8 +47,9 @@ window.fetch = async function (...args) {
 
   const response = await originalFetch(resource, config);
   
-  // C# Backend süresi dolmuş/geçersiz oturum tespit ederse (giriş denemesinin kendisi hariç)
-  if (apiIstegi && response.status === 401 && !resource.includes('/Auth/login')) {
+  // C# Backend süresi dolmuş/geçersiz oturum tespit ederse
+  // (giriş denemesi ve açılıştaki oturum kontrolü hariç; onlarda 401 beklenen bir sonuçtur)
+  if (apiIstegi && response.status === 401 && !resource.includes('/Auth/login') && !resource.includes('/Auth/oturum')) {
     console.error("Yetkisiz İstek (401). Oturum sonlandırılıyor.");
     window.dispatchEvent(new CustomEvent('auth-unauthorized'));
   }
@@ -75,12 +76,13 @@ export default function App() {
 
   const [toast, setToast] = useState({ message: '', type: 'success', visible: false });
 
-  const gosterBildirim = (message, type = 'success') => {
+  // useCallback: sayfalardaki effect'lerin bağımlılığı olarak güvenle kullanılabilsin diye sabit referans
+  const gosterBildirim = useCallback((message, type = 'success') => {
     setToast({ message, type, visible: true });
     setTimeout(() => {
       setToast(prev => ({ ...prev, visible: false }));
     }, 3000);
-  };
+  }, []);
 
   useEffect(() => {
     const handleStatus = (e) => setIsBackendOnline(e.detail);
@@ -97,7 +99,7 @@ export default function App() {
       window.removeEventListener('backend-status', handleStatus);
       window.removeEventListener('auth-unauthorized', handleUnauthorized);
     };
-  }, []);
+  },[gosterBildirim]);
 
   const [ayarlar, setAyarlar] = useState({
     tema: 'light', 
@@ -192,7 +194,7 @@ export default function App() {
     }
   };
 
-  const handleLogin = (role, name) => {
+  const oturumuAc = useCallback((role, name, karsila = true) => {
     const activeRole = role || 'Yazılım Stajyeri';
     const activeName = name || (activeRole === 'Fabrika Müdürü' ? 'Ahmet Yılmaz' : activeRole === 'Kalite Mühendisi' ? 'Ayşe Demir' : activeRole === 'Operatör' ? 'Mehmet Kaya' : 'Doğukan Aydın');
     
@@ -204,8 +206,23 @@ export default function App() {
     const allowed = rolePermissions[activeRole] || rolePermissions['Yazılım Stajyeri'];
     setPage(allowed[0]);
     setIsAuthenticated(true);
-    gosterBildirim(`Hoş geldiniz ${activeName} (${activeRole})!`, 'success');
-  };
+    if (karsila) gosterBildirim(`Hoş geldiniz ${activeName} (${activeRole})!`, 'success');
+  }, [gosterBildirim]);
+
+  const handleLogin = (role, name) => oturumuAc(role, name);
+
+  // Sayfa yenilendiğinde geçerli oturum cookie'si varsa kullanıcı tekrar giriş yapmadan devam eder
+  const [oturumKontrolEdildi, setOturumKontrolEdildi] = useState(DEMO_MODE);
+  useEffect(() => {
+    if (DEMO_MODE) return;
+    let iptal = false;
+    fetch(`${API_URL}/Auth/oturum`)
+      .then(res => (res.ok ? res.json() : null))
+      .then(oturum => { if (!iptal && oturum?.role) oturumuAc(oturum.role, oturum.username, false); })
+      .catch(() => { /* backend kapalı: giriş ekranı gösterilir */ })
+      .finally(() => { if (!iptal) setOturumKontrolEdildi(true); });
+    return () => { iptal = true; };
+  }, [oturumuAc]);
 
   // Sunucudaki oturum cookie'sini temizler (backend kapalıysa sessizce geçer)
   const cikisYap = async () => {
@@ -238,6 +255,7 @@ export default function App() {
     );
   }, [userRole, query]);
   
+  if (!oturumKontrolEdildi) return null; // oturum kontrolü sürerken giriş ekranı bir anlığına yanıp sönmesin
   if (!isAuthenticated) return <LoginScreen onLogin={handleLogin} />;
   
   const userInitials = userName.split(' ').map(n => n[0]).join('').substring(0, 2);

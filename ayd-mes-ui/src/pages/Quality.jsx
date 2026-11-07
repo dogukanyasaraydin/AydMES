@@ -267,7 +267,7 @@ export default function Quality({ ayarlar, gosterBildirim, tarihFiltresi, userRo
       window.removeEventListener('app-excel-export', handleExcel);
       window.removeEventListener('app-pdf-export', handlePdf);
     };
-  }, [filteredOnaylar, toplamDefektAdet, enSikDefektAdi]);
+  }, [filteredOnaylar, toplamDefektAdet, enSikDefektAdi, gosterBildirim]);
 
   return (
     <>

@@ -178,7 +178,7 @@ export default function Stops({ ayarlar, gosterBildirim, tarihFiltresi, userRole
       window.removeEventListener('app-excel-export', handleExcel);
       window.removeEventListener('app-pdf-export', handlePdf);
     };
-  }, [filteredKayitlar, toplamDurus, acikKayitSayisi, mttr]);
+  }, [filteredKayitlar, toplamDurus, acikKayitSayisi, mttr, gosterBildirim]);
 
   return (
     <>
