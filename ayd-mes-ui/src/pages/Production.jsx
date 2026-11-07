@@ -165,9 +165,10 @@ export default function Production({ ayarlar, gosterBildirim, userRole }) {
   };
 
   useEffect(() => {
-    planlariGetir();
+    // İlk yükleme de zamanlayıcı üzerinden yapılır (effect içinde doğrudan setState yerine)
+    const ilkYukleme = setTimeout(planlariGetir, 0);
     const timer = setInterval(planlariGetir, ayarlar?.yenilemeHizi || 5000);
-    return () => clearInterval(timer);
+    return () => { clearTimeout(ilkYukleme); clearInterval(timer); };
   }, [ayarlar?.yenilemeHizi]);
 
   const durumGuncelle = async (plan) => {

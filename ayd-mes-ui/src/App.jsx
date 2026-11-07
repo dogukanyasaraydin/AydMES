@@ -1,4 +1,4 @@
-import { API_URL } from './config/api';
+import { API_URL, DEMO_MODE } from './config/api';
 import { useMemo, useState, useEffect } from 'react';
 import PageContent from './pages/PageContent';
 import { rolePermissions, canEdit } from './utils/permissions';
@@ -79,6 +79,15 @@ export default function App() {
   const [isKullaniciMenuAcik, setIsKullaniciMenuAcik] = useState(false);
   const [isBackendOnline, setIsBackendOnline] = useState(true);
 
+  const [toast, setToast] = useState({ message: '', type: 'success', visible: false });
+
+  const gosterBildirim = (message, type = 'success') => {
+    setToast({ message, type, visible: true });
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, visible: false }));
+    }, 3000);
+  };
+
   useEffect(() => {
     const handleStatus = (e) => setIsBackendOnline(e.detail);
     window.addEventListener('backend-status', handleStatus);
@@ -95,15 +104,6 @@ export default function App() {
       window.removeEventListener('auth-unauthorized', handleUnauthorized);
     };
   }, []);
-
-  const [toast, setToast] = useState({ message: '', type: 'success', visible: false });
-
-  const gosterBildirim = (message, type = 'success') => {
-    setToast({ message, type, visible: true });
-    setTimeout(() => {
-      setToast(prev => ({ ...prev, visible: false }));
-    }, 3000);
-  };
 
   const [ayarlar, setAyarlar] = useState({
     tema: 'light', 
@@ -123,7 +123,8 @@ export default function App() {
     const sistemDurumunuKontrolEt = async () => {
       try {
         const apiUrl = API_URL;
-        const response = await fetch(`${apiUrl}/MakineVerileri`, { method: 'GET' });
+        // Giriş gerektirmeyen sağlık endpoint'i (korumalı bir endpoint 401 dönüp oturumu kapatırdı)
+        const response = await fetch(`${apiUrl}/health`, { method: 'GET' });
         setIsBackendOnline(response.ok);
       } catch {
         setIsBackendOnline(false); 
@@ -460,7 +461,11 @@ export default function App() {
               textAlign: 'center',
               letterSpacing: '0.3px'
             }}>
-              <strong style={{ marginRight: '6px' }}>⚠️ DEMO MODU:</strong> Sistem şu an çevrimdışı ve sahte (mock) verilerle çalışıyor. Gerçek zamanlı veriler için lütfen C# Backend (API) uygulamasını başlatın ve SQL bağlantılarınızı kontrol edin.
+              {DEMO_MODE ? (
+                <><strong style={{ marginRight: '6px' }}>🌐 CANLI DEMO:</strong> Bu sürüm tarayıcıda örnek verilerle çalışır. Gerçek zamanlı üretim simülasyonu için projeyi .NET API ve SQL Server ile yerelde çalıştırın.</>
+              ) : (
+                <><strong style={{ marginRight: '6px' }}>⚠️ DEMO MODU:</strong> Sistem şu an çevrimdışı ve sahte (mock) verilerle çalışıyor. Gerçek zamanlı veriler için lütfen C# Backend (API) uygulamasını başlatın ve SQL bağlantılarınızı kontrol edin.</>
+              )}
             </div>
           )}
 

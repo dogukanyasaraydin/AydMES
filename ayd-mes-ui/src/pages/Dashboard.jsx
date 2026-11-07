@@ -36,7 +36,7 @@ function Stat({ label, value, sub, icon, danger, isLive = false, isBackendOnline
   ); 
 }
 
-function Alerts({ makineVerileri, setPage, isBackendOnline = true, ayarlar }) {
+function Alerts({ makineVerileri, isBackendOnline = true, ayarlar }) {
   if (!isBackendOnline) {
     return (
       <div className="alert-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -341,7 +341,16 @@ function TaskTable({ ayarlar, gosterBildirim }) {
   );
 }
 
-export default function Dashboard({ ayarlar, gosterBildirim, setPage, isBackendOnline = true, tarihFiltresi }) { 
+// Canlı makine listesinden anlık toplam vuruşu trend geçmişine ekler (son 30 nokta tutulur)
+function trendGecmisineEkle(prev, makineler) {
+  if (!Array.isArray(makineler) || makineler.length === 0) return prev;
+  const saat = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  if (prev.length > 0 && prev[prev.length - 1].saat === saat) return prev;
+  const toplamVurus = makineler.reduce((acc, m) => acc + (m.vurusSayisi ?? m.VurusSayisi ?? 0), 0);
+  return [...prev, { saat, uretim: toplamVurus }].slice(-30);
+}
+
+export default function Dashboard({ ayarlar, gosterBildirim, isBackendOnline = true, tarihFiltresi }) { 
   const [trendVerileri, setTrendVerileri] = useState([]);
   const [oeeVerileri, setOeeVerileri] = useState([]);
   const [canliMakineler, setCanliMakineler] = useState([]);
@@ -359,7 +368,11 @@ export default function Dashboard({ ayarlar, gosterBildirim, setPage, isBackendO
         if (resOee.ok) setOeeVerileri(await resOee.json());
 
         const resMakine = await fetch(`${apiUrl}/MakineVerileri`);
-        if (resMakine.ok) setCanliMakineler(await resMakine.json());
+        if (resMakine.ok) {
+          const makineler = await resMakine.json();
+          setCanliMakineler(makineler);
+          setCanliTrendGecmisi(prev => trendGecmisineEkle(prev, makineler));
+        }
 
         const resOeeK = await fetch(`${apiUrl}/OeeKayitlari`);
         if (resOeeK.ok) {
@@ -374,22 +387,11 @@ export default function Dashboard({ ayarlar, gosterBildirim, setPage, isBackendO
         setCanliOeeKayitlari(mockOeeKayitlari);
       }
     };
-    verileriGetir();
-    const timer = setInterval(verileriGetir, ayarlar?.yenilemeHizi || 3000); 
-    return () => clearInterval(timer);
+    // İlk yükleme de zamanlayıcı üzerinden yapılır (effect içinde doğrudan setState yerine)
+    const ilkYukleme = setTimeout(verileriGetir, 0);
+    const timer = setInterval(verileriGetir, ayarlar?.yenilemeHizi || 3000);
+    return () => { clearTimeout(ilkYukleme); clearInterval(timer); };
   }, [ayarlar?.yenilemeHizi]);
-
-  useEffect(() => {
-    if (!Array.isArray(canliMakineler) || canliMakineler.length === 0) return;
-    const saat = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const toplamVurus = canliMakineler.reduce((acc, m) => acc + (m.vurusSayisi ?? m.VurusSayisi ?? 0), 0);
-    
-    setCanliTrendGecmisi(prev => {
-      if (prev.length > 0 && prev[prev.length - 1].saat === saat) return prev;
-      const yeni = [...prev, { saat, uretim: toplamVurus }];
-      return yeni.slice(-30);
-    });
-  }, [canliMakineler]);
 
   const aktifMakineler = Array.isArray(canliMakineler) ? canliMakineler.filter(m => (m.durum || m.Durum) === 'Çalışıyor') : [];
   const canliToplamVurus = aktifMakineler.reduce((acc, m) => acc + (m.vurusSayisi || m.VurusSayisi || 0), 0);
@@ -472,7 +474,7 @@ export default function Dashboard({ ayarlar, gosterBildirim, setPage, isBackendO
         </Card>
 
         <Card title="CANLI SİSTEM UYARILARI">
-          <Alerts makineVerileri={canliMakineler} setPage={setPage} isBackendOnline={isBackendOnline} ayarlar={ayarlar} />
+          <Alerts makineVerileri={canliMakineler} isBackendOnline={isBackendOnline} ayarlar={ayarlar} />
         </Card>
       </div>
 

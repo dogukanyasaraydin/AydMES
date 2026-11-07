@@ -2,16 +2,24 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import { DEMO_MODE } from './config/api'
 
 // Hızlı Demo / Offline Mod için Akıllı Fetch Interceptor
-// Normalde 8 saniye (8000ms) bekler (yavaş PC'ler için). 
-// Ancak backend'in kapalı olduğunu anlarsa, sonraki isteklerde sadece 300ms bekleyip hemen pes eder.
+// Normalde 8 saniye (8000ms) bekler (yavaş PC'ler için).
+// Backend'in kapalı olduğunu anlarsa sonraki isteklerde 5 saniyede pes eder.
 // Böylece sistemin donmasını engeller ama yavaş bilgisayarlarda da veriyi kesmez.
+// DEMO_MODE'da API isteği hiç gönderilmez; sayfalar doğrudan mock verilere düşer.
 const originalFetch = window.fetch;
 window._isBackendDead = false;
 
 window.fetch = async (...args) => {
   const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+
+  if (DEMO_MODE && url && url.includes('/api/')) {
+    window._isBackendDead = true;
+    window.dispatchEvent(new CustomEvent('backend-status', { detail: false }));
+    throw new TypeError('Demo modu: backend devre dışı');
+  }
   
   if (url && (url.includes('127.0.0.1') || url.includes('localhost'))) {
     const controller = new AbortController();
