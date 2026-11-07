@@ -166,7 +166,7 @@ export default function App() {
         }),
       }).catch(() => {});
 
-      // C# Web API POST /api/MakineVerileri/baslat ile SQL Server'da makineyi 0'dan hedefe başlatır
+      // C# Web API POST /api/MakineVerileri/baslat ile veritabanında makineyi 0'dan hedefe başlatır
       await fetch(`${apiUrl}/MakineVerileri/baslat`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -467,7 +467,7 @@ export default function App() {
               letterSpacing: '0.3px'
             }}>
               {DEMO_MODE ? (
-                <><strong style={{ marginRight: '6px' }}>🌐 CANLI DEMO:</strong> Bu sürüm tarayıcıda örnek verilerle çalışır. Gerçek zamanlı üretim simülasyonu için projeyi .NET API ve SQL Server ile yerelde çalıştırın.</>
+                <><strong style={{ marginRight: '6px' }}>🌐 CANLI DEMO:</strong> Bu sürüm tarayıcıda örnek verilerle çalışır. Gerçek zamanlı üretim simülasyonu için projeyi yerelde .NET API ile çalıştırın (dotnet run).</>
               ) : (
                 <><strong style={{ marginRight: '6px' }}>⚠️ DEMO MODU:</strong> Sistem şu an çevrimdışı ve sahte (mock) verilerle çalışıyor. Gerçek zamanlı veriler için lütfen C# Backend (API) uygulamasını başlatın ve SQL bağlantılarınızı kontrol edin.</>
               )}

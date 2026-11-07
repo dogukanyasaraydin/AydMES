@@ -54,9 +54,9 @@ builder.Services.AddRateLimiter(options =>
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
 });
 
-// SQL SERVER BAĞLANTISI
+// SQLITE BAĞLANTISI — veritabanı tek bir dosya (aydmes.db); ayrı bir sunucu kurulumu gerekmez
 builder.Services.AddDbContext<MesDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=aydmes.db"));
 
 // ---> JWT AUTHENTICATION (KİMLİK DOĞRULAMA) AYARLARI <---
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -112,7 +112,7 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        app.Logger.LogError(ex, "Veritabanı hazırlanamadı. Bağlantı cümlesini (ConnectionStrings:DefaultConnection) kontrol edin.");
+        app.Logger.LogError(ex, "Veritabanı hazırlanamadı (ConnectionStrings:DefaultConnection).");
     }
 }
 

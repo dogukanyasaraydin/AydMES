@@ -6,7 +6,7 @@ using AydMES.Api.Security;
 
 namespace AydMES.Tests;
 
-public class GuvenlikTestleri : IDisposable
+public class ApiTestleri : IDisposable
 {
     private readonly TestUygulamasi _uygulama = new();
 
@@ -178,5 +178,41 @@ public class GuvenlikTestleri : IDisposable
         Assert.NotEqual("eski123", sifre);
         Assert.True(SifreHasher.Dogrula(sifre, "eski123", out var tekrar));
         Assert.False(tekrar);
+    }
+
+    [Fact]
+    public async Task Uretim_baslatma_makineyi_calistirir_ve_kaydeder()
+    {
+        var istemci = await GirisYap("ahmet", "demo123");
+
+        var makineler = await istemci.GetFromJsonAsync<JsonElement>("/api/MakineVerileri");
+        Assert.Equal(4, makineler.GetArrayLength());
+
+        var yanit = await istemci.PostAsJsonAsync("/api/MakineVerileri/baslat", new { makineKod = "PRES-02", hedefVurus = 500 });
+        Assert.Equal(HttpStatusCode.OK, yanit.StatusCode);
+
+        using var db = _uygulama.VeritabaniAc();
+        var makine = db.Makineler.Single(m => m.Kod == "PRES-02");
+        Assert.Equal("Çalışıyor", makine.Durum);
+        Assert.Equal(500, makine.HedefVurus);
+
+        var yok = await istemci.PostAsJsonAsync("/api/MakineVerileri/baslat", new { makineKod = "PRES-99", hedefVurus = 500 });
+        Assert.Equal(HttpStatusCode.NotFound, yok.StatusCode);
+    }
+
+    [Fact]
+    public async Task Kalip_bakimi_vurus_sayacini_sifirlar()
+    {
+        var istemci = await GirisYap("ayse", "demo123");
+        int id;
+        using (var db = _uygulama.VeritabaniAc()) id = db.KalipKayitlari.Single(k => k.KalipKodu == "KLP-004").Id;
+
+        var yanit = await istemci.PostAsync($"/api/KalipKayitlari/bakim-yap/{id}", null);
+        Assert.Equal(HttpStatusCode.OK, yanit.StatusCode);
+
+        using var db2 = _uygulama.VeritabaniAc();
+        var kalip = db2.KalipKayitlari.Single(k => k.Id == id);
+        Assert.Equal(0, kalip.MevcutVurus);
+        Assert.Equal("İyi", kalip.Durum);
     }
 }

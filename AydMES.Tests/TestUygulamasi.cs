@@ -2,6 +2,7 @@ using AydMES.Api.Models;
 using AydMES.Api.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,12 +10,15 @@ using Microsoft.Extensions.Hosting;
 namespace AydMES.Tests;
 
 /// <summary>
-/// API'yi gerçek pipeline'ıyla (kimlik doğrulama, yetkilendirme, rate limit, doğrulama) bellekte çalıştırır.
-/// SQL Server yerine her örnek için ayrı bir InMemory veritabanı kullanılır; demo kullanıcıları seed edilir.
+/// API'yi gerçek pipeline'ıyla (kimlik doğrulama, yetkilendirme, rate limit, doğrulama) çalıştırır.
+/// Her test örneği için bellekte ayrı bir gerçek SQLite veritabanı açılır; migration'lar uygulanır
+/// ve demo kullanıcıları seed edilir. Bağlantı açık kaldığı sürece veritabanı yaşar.
 /// </summary>
 public class TestUygulamasi : WebApplicationFactory<Program>
 {
-    private readonly string _veritabaniAdi = "AydMES_Test_" + Guid.NewGuid();
+    private readonly SqliteConnection _baglanti = new("Data Source=:memory:");
+
+    public TestUygulamasi() => _baglanti.Open();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -22,7 +26,7 @@ public class TestUygulamasi : WebApplicationFactory<Program>
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<DbContextOptions<MesDbContext>>();
-            services.AddDbContext<MesDbContext>(o => o.UseInMemoryDatabase(_veritabaniAdi));
+            services.AddDbContext<MesDbContext>(o => o.UseSqlite(_baglanti));
 
             // Arka plan simülasyonu testleri etkilemesin
             var simulasyon = services.Single(d => d.ImplementationType == typeof(UretimSimulasyonService));
@@ -31,6 +35,12 @@ public class TestUygulamasi : WebApplicationFactory<Program>
     }
 
     public MesDbContext VeritabaniAc() => Services.CreateScope().ServiceProvider.GetRequiredService<MesDbContext>();
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        if (disposing) _baglanti.Dispose();
+    }
 }
 
 internal static class ServisUzantilari
