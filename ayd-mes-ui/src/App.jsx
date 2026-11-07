@@ -369,7 +369,7 @@ export default function App() {
                     {isBackendOnline ? (
                       <>
                         <div style={{ padding: '14px 16px', borderBottom: '1px solid #EDF2F7', cursor: 'pointer', backgroundColor: ayarlar.tema === 'dark' ? 'rgba(49,130,206,0.1)' : '#EBF8FF', transition: 'background-color 0.2s' }}>
-                          <strong style={{ display: 'block', fontSize: '13px', color: '#3182CE', marginBottom: '4px' }}>Umut Bey'den mesaj</strong>
+                          <strong style={{ display: 'block', fontSize: '13px', color: '#3182CE', marginBottom: '4px' }}>Doğukan Bey'den mesaj</strong>
                           <span style={{ fontSize: '12px', lineHeight: '1.4' }}>Yazılım kurulum izinleri için attığın maili inceledim, onay veriyorum.</span>
                         </div>
                         <div style={{ padding: '14px 16px', cursor: 'pointer', transition: 'background-color 0.2s' }}>

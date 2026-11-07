@@ -38,7 +38,7 @@ namespace AydMES.Api.Data
             {
                 db.KaliteOnaylari.AddRange(
                     new KaliteOnayi { PartiKodu = "PRT-1045", IslemAdimi = "Son Kontrol", Durum = "Onaylandı", Saat = "10:30", OlcumDegeri = "98.5", Notlar = "Toleranslar normal." },
-                    new KaliteOnayi { PartiKodu = "PRT-1046", IslemAdimi = "Görsel Kontrol", Durum = "Bekliyor", Saat = "14:15", OlcumDegeri = "0", Notlar = "Umut Bey'den onay bekleniyor." },
+                    new KaliteOnayi { PartiKodu = "PRT-1046", IslemAdimi = "Görsel Kontrol", Durum = "Bekliyor", Saat = "14:15", OlcumDegeri = "0", Notlar = "Doğukan Bey'den onay bekleniyor." },
                     new KaliteOnayi { PartiKodu = "PRT-1047", IslemAdimi = "Ölçüm", Durum = "Reddedildi", Saat = "15:45", OlcumDegeri = "91.2", Notlar = "Çizik tespit edildi, analize gönderildi." }
                 );
             }
@@ -47,7 +47,7 @@ namespace AydMES.Api.Data
             {
                 db.GorevKayitlari.AddRange(
                     new GorevKaydi { GorevAdi = "PRES-02 Kalıp Bakımı", AtananKisi = "Doğukan Aydın", Durum = "Devam ediyor", Oncelik = "high", Termin = "Bugün" },
-                    new GorevKaydi { GorevAdi = "A001 Parti Analizi", AtananKisi = "Umut Bey", Durum = "Beklemede", Oncelik = "medium", Termin = "Yarın" },
+                    new GorevKaydi { GorevAdi = "A001 Parti Analizi", AtananKisi = "Doğukan Bey", Durum = "Beklemede", Oncelik = "medium", Termin = "Yarın" },
                     new GorevKaydi { GorevAdi = "Haftalık OEE Raporu", AtananKisi = "Doğukan Aydın", Durum = "Tamamlandı", Oncelik = "low", Termin = "Cuma" }
                 );
             }
