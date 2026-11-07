@@ -215,4 +215,27 @@ public class ApiTestleri : IDisposable
         Assert.Equal(0, kalip.MevcutVurus);
         Assert.Equal("İyi", kalip.Durum);
     }
+
+    [Fact]
+    public async Task Oturum_ucu_sayfa_yenilenince_kullaniciyi_geri_yukler()
+    {
+        Assert.Equal(HttpStatusCode.Unauthorized, (await _uygulama.CreateClient().GetAsync("/api/Auth/oturum")).StatusCode);
+
+        var istemci = await GirisYap("ayse", "demo123");
+        var oturum = await istemci.GetFromJsonAsync<JsonElement>("/api/Auth/oturum");
+        Assert.Equal("Kalite Mühendisi", oturum.GetProperty("role").GetString());
+        Assert.Equal("Ayşe Demir", oturum.GetProperty("username").GetString());
+    }
+
+    [Fact]
+    public async Task Beni_hatirla_kalici_cookie_verir_secilmezse_oturum_cookiesi()
+    {
+        var normal = await _uygulama.CreateClient().PostAsJsonAsync("/api/Auth/login", new { username = "ahmet", password = "demo123" });
+        Assert.DoesNotContain("expires=", Assert.Single(normal.Headers.GetValues("Set-Cookie")), StringComparison.OrdinalIgnoreCase);
+
+        var hatirla = await _uygulama.CreateClient().PostAsJsonAsync("/api/Auth/login", new { username = "ahmet", password = "demo123", beniHatirla = true });
+        var cerez = Assert.Single(hatirla.Headers.GetValues("Set-Cookie"));
+        var bitis = DateTimeOffset.Parse(cerez.Split(';').Select(x => x.Trim()).Single(x => x.StartsWith("expires=", StringComparison.OrdinalIgnoreCase))[8..]);
+        Assert.InRange(bitis, DateTimeOffset.UtcNow.AddDays(6), DateTimeOffset.UtcNow.AddDays(8));
+    }
 }

@@ -103,6 +103,14 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Yakalanmayan tüm hatalar burada loglanır (ILogger) ve istemciye ayrıntı sızdırmadan tek tip mesaj döner.
+// Controller'larda hata yutup sahte veri döndürmek yerine bu merkezi yapı kullanılır.
+app.UseExceptionHandler(hata => hata.Run(async ctx =>
+{
+    ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
+    await ctx.Response.WriteAsJsonAsync(new { message = "Sunucu hatası oluştu. Lütfen tekrar deneyin." });
+}));
+
 // Şema onarımı + örnek veri. Veritabanına ulaşılamazsa API yine de açılır (controller'lar varsayılan veri döner).
 using (var scope = app.Services.CreateScope())
 {

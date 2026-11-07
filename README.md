@@ -22,7 +22,7 @@ AYD MES, pres hatları olan bir fabrikada makine telemetrisini, OEE'yi, duruşla
 | **Üretim simülasyonu** | `BackgroundService`, çalışan makinelere 3 saniyede bir vuruş ekler, %4 olasılıkla fire üretir ve hedefe ulaşan iş emrini kapatır. |
 | **Rol bazlı yetkilendirme** | 5 rol (Fabrika Müdürü, Kalite Mühendisi, Operatör…). Menüler frontend'de, işlemler API'de rol ile kısıtlanır. Operatör veri okuyabilir ama değiştiremez; GET dışındaki tüm uçlar tek bir kuralla düzenleme yetkisi ister. |
 | **Güvenlik** | JWT httpOnly + SameSite=Strict cookie'de taşınır (XSS ile çalınamaz). Şifreler PBKDF2 ile hashlenir. Girişte deneme sınırı vardır (IP başına dakikada 5). Tüm girdiler doğrulanır. Üretimde HTTPS + HSTS açıktır. Depoda hiçbir gizli anahtar bulunmaz. |
-| **Otomatik testler** | xUnit entegrasyon testleri (15 test) kimlik doğrulama, rol kısıtlamaları, deneme sınırı, veri doğrulama ve üretim akışını her push'ta CI'da kontrol eder. |
+| **Otomatik testler** | xUnit entegrasyon testleri (17 test) kimlik doğrulama, rol kısıtlamaları, deneme sınırı, veri doğrulama ve üretim akışını her push'ta CI'da kontrol eder. |
 | **Çevrimdışı mod** | Backend'e ulaşılamazsa arayüz zaman aşımıyla bunu algılar ve donmadan örnek verilerle çalışmaya devam eder. |
 | **Raporlama** | PDF rapor çıktısı ve Excel'e aktarma; açık/koyu tema. |
 

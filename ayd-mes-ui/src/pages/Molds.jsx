@@ -78,7 +78,7 @@ export default function Molds({ ayarlar, gosterBildirim, userRole }) {
       window.removeEventListener('app-mold-form-open', handleOpenModal);
       window.removeEventListener('app-data-refresh', handleRefresh);
     };
-  }, []);
+  },[gosterBildirim]);
 
   const kalipBakimiYap = async (id, kalipKodu) => {
     try {

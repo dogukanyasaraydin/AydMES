@@ -16,6 +16,9 @@ namespace AydMES.Api.Security
         public string Audience { get; set; } = "AydMES.Ui";
         public int SureSaat { get; set; } = 2;
 
+        /// <summary>"Beni hatırla" seçildiğinde oturumun geçerli kalacağı gün sayısı.</summary>
+        public int HatirlaGun { get; set; } = 7;
+
         public SymmetricSecurityKey ImzaAnahtari()
         {
             // HMAC-SHA256 için en az 256 bit (32 bayt) anahtar gerekir.
