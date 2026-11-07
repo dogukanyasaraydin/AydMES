@@ -240,7 +240,7 @@ export function CalendarModal({ isOpen, onClose, page, tarihFiltresi, setTarihFi
                 <strong style={{ color: isDark ? '#E2E8F0' : '#2D3748' }}>10 Ağustos 2026</strong>
                 <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#3182CE', backgroundColor: '#EBF8FF', padding: '2px 8px', borderRadius: '12px' }}>Bugün</span>
               </div>
-              <div style={{ fontSize: '14px', color: isDark ? '#A0AEC0' : '#4A5568', marginTop: '4px' }}>08:00 - 16:00 | Gündüz Vardiyası (Umut Bey)</div>
+              <div style={{ fontSize: '14px', color: isDark ? '#A0AEC0' : '#4A5568', marginTop: '4px' }}>08:00 - 16:00 | Gündüz Vardiyası (Doğukan Bey)</div>
             </div>
             <div style={{ padding: '12px', backgroundColor: isDark ? '#1A202C' : '#F7FAFC', borderRadius: '8px', borderLeft: '4px solid #E53E3E' }}>
               <strong style={{ color: isDark ? '#E2E8F0' : '#2D3748' }}>12 Ağustos 2026</strong>
