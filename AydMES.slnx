@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="AydMES.Api/AydMES.Api.csproj" />
+  <Project Path="AydMES.Tests/AydMES.Tests.csproj" />
+</Solution>
