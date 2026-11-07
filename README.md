@@ -3,12 +3,12 @@
 [![CI](https://github.com/dogukanyasaraydin/AydMES/actions/workflows/ci.yml/badge.svg)](https://github.com/dogukanyasaraydin/AydMES/actions/workflows/ci.yml)
 ![.NET 8](https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet)
 ![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=000)
-![SQL Server](https://img.shields.io/badge/SQL%20Server-EF%20Core%208-CC2927?logo=microsoftsqlserver)
+![SQLite](https://img.shields.io/badge/SQLite-EF%20Core%208-003B57?logo=sqlite)
 
 **🌐 Canlı demo:** https://dogukanyasaraydin.github.io/AydMES/ — kurulum gerektirmez. Giriş ekranındaki *Hızlı Demo Girişi* butonlarından bir rol seçin.
 &nbsp;·&nbsp; 🇬🇧 [English README](README.en.md)
 
-AYD MES, pres hatları olan bir fabrikada makine telemetrisini, OEE'yi, duruşları, kalıp ömrünü ve kalite süreçlerini gerçek zamanlı izleyen web tabanlı bir **Manufacturing Execution System**'dir. React ile yazılmış tek sayfalık arayüz, JWT ile korunan bir ASP.NET Core 8 REST API'si ve SQL Server veritabanından oluşur. Arka planda çalışan bir simülasyon servisi, makinelerden canlı veri geliyormuş gibi üretim verisi üretir.
+AYD MES, pres hatları olan bir fabrikada makine telemetrisini, OEE'yi, duruşları, kalıp ömrünü ve kalite süreçlerini gerçek zamanlı izleyen web tabanlı bir **Manufacturing Execution System**'dir. React ile yazılmış tek sayfalık arayüz, JWT ile korunan bir ASP.NET Core 8 REST API'si ve SQLite veritabanından oluşur. Arka planda çalışan bir simülasyon servisi, makinelerden canlı veri geliyormuş gibi üretim verisi üretir.
 
 ![Genel Bakış](docs/screenshots/02-genel-bakis.webp)
 
@@ -20,8 +20,9 @@ AYD MES, pres hatları olan bir fabrikada makine telemetrisini, OEE'yi, duruşla
 | **OEE analizi** | Kullanılabilirlik × Performans × Kalite hesabı, makine karşılaştırma ve üretim trend grafikleri (Recharts). |
 | **Dijital ikiz** | Fabrika yerleşimini 2D kuş bakışı ve 3D izometrik görünümde makine durumlarıyla gösterir. |
 | **Üretim simülasyonu** | `BackgroundService`, çalışan makinelere 3 saniyede bir vuruş ekler, %4 olasılıkla fire üretir ve hedefe ulaşan iş emrini kapatır. |
-| **Rol bazlı yetkilendirme** | 5 rol (Fabrika Müdürü, Kalite Mühendisi, Operatör…). Menü ve işlemler frontend'de, uç noktalar API'de rol ile kısıtlanır. |
-| **Güvenlik** | JWT (issuer/audience/süre doğrulamalı), PBKDF2 ile hashlenmiş şifreler; imza anahtarı kaynak kodda değil yapılandırmada durur. Tüm uç noktalar varsayılan olarak kimlik doğrulama ister. |
+| **Rol bazlı yetkilendirme** | 5 rol (Fabrika Müdürü, Kalite Mühendisi, Operatör…). Menüler frontend'de, işlemler API'de rol ile kısıtlanır. Operatör veri okuyabilir ama değiştiremez; GET dışındaki tüm uçlar tek bir kuralla düzenleme yetkisi ister. |
+| **Güvenlik** | JWT httpOnly + SameSite=Strict cookie'de taşınır (XSS ile çalınamaz). Şifreler PBKDF2 ile hashlenir. Girişte deneme sınırı vardır (IP başına dakikada 5). Tüm girdiler doğrulanır. Üretimde HTTPS + HSTS açıktır. Depoda hiçbir gizli anahtar bulunmaz. |
+| **Otomatik testler** | xUnit entegrasyon testleri (15 test) kimlik doğrulama, rol kısıtlamaları, deneme sınırı, veri doğrulama ve üretim akışını her push'ta CI'da kontrol eder. |
 | **Çevrimdışı mod** | Backend'e ulaşılamazsa arayüz zaman aşımıyla bunu algılar ve donmadan örnek verilerle çalışmaya devam eder. |
 | **Raporlama** | PDF rapor çıktısı ve Excel'e aktarma; açık/koyu tema. |
 
@@ -57,7 +58,7 @@ flowchart LR
         SIM --> EF
     end
 
-    DB[("SQL Server")]
+    DB[("SQLite<br/>(aydmes.db)")]
 
     FI -- "HTTP + Bearer JWT" --> AUTH
     FI -- "HTTP + Bearer JWT" --> CTRL
@@ -67,9 +68,10 @@ flowchart LR
 ## 🛠️ Teknolojiler
 
 - **Frontend:** React 19, Vite, Recharts, responsive CSS (açık/koyu tema)
-- **Backend:** C# / .NET 8 Web API, Entity Framework Core 8 (Code-First, migration'lar), JWT Bearer kimlik doğrulama, Swagger/OpenAPI
-- **Veritabanı:** Microsoft SQL Server
-- **CI/CD:** GitHub Actions. Her push'ta backend build ve frontend lint + build çalışır; canlı demo GitHub Pages'e otomatik yayınlanır.
+- **Backend:** C# / .NET 8 Web API, Entity Framework Core 8 (Code-First, migration'lar), JWT kimlik doğrulama (httpOnly cookie), Rate Limiting, Swagger/OpenAPI
+- **Test:** xUnit, `WebApplicationFactory` + bellek içi SQLite ile entegrasyon testleri
+- **Veritabanı:** SQLite (EF Core sayesinde SQL Server / PostgreSQL'e tek satırla geçilebilir)
+- **CI/CD:** GitHub Actions. Her push'ta backend build, testler ve frontend lint + build çalışır; canlı demo GitHub Pages'e otomatik yayınlanır.
 
 ## 📁 Proje Yapısı
 
@@ -79,8 +81,9 @@ AydMES.Api/                 ASP.NET Core 8 Web API
 ├── Data/VeriTohumlayici.cs İlk açılışta şema onarımı + örnek veri
 ├── Migrations/             EF Core migration'ları
 ├── Models/                 Entity sınıfları ve MesDbContext
-├── Security/               JWT ayarları, şifre hashleme, rol sabitleri
+├── Security/               JWT/cookie ayarları, şifre hashleme, roller, yazma yetkisi kuralı
 └── Services/               Üretim simülasyonu (BackgroundService)
+AydMES.Tests/               xUnit entegrasyon testleri (güvenlik ve doğrulama)
 ayd-mes-ui/                 React + Vite SPA
 ├── src/pages/              Dashboard, Analytics, FactoryMap, Production, Quality, …
 ├── src/components/         Uygulama kabuğu, giriş ekranı, modallar
@@ -89,26 +92,22 @@ ayd-mes-ui/                 React + Vite SPA
 
 ## 📦 Kurulum ve Çalıştırma
 
-**Gereksinimler:** .NET 8 SDK, Node.js 20+, SQL Server (LocalDB yeterlidir)
+**Gereksinimler:** .NET 8 SDK ve Node.js 20+. Ayrı bir veritabanı sunucusu kurmanız **gerekmez**: SQLite veritabanı (`aydmes.db`) ilk çalıştırmada tabloları ve örnek verileriyle birlikte otomatik oluşur.
 
-### 1. Veritabanı
-```bash
-dotnet tool install --global dotnet-ef
-```
-```bash
-cd AydMES.Api
-dotnet ef database update
-```
-Bağlantı cümlesi `AydMES.Api/appsettings.json` içindedir (varsayılan: `(localdb)\MSSQLLocalDB`).
-
-### 2. Backend
+### 1. Backend
 ```bash
 cd AydMES.Api
 dotnet run
 ```
-API `http://localhost:5139` adresinde açılır. Swagger arayüzü `http://localhost:5139/swagger` adresindedir.
+API `http://localhost:5139` adresinde açılır. Swagger arayüzü `http://localhost:5139/swagger` adresindedir. Swagger'da önce `POST /api/Auth/login` çalıştırın; oturum cookie'si sonraki isteklerde otomatik kullanılır.
 
-### 3. Frontend
+### Testler
+```bash
+dotnet test AydMES.Tests
+```
+Testler bellekte açılan gerçek bir SQLite veritabanıyla çalışır.
+
+### 2. Frontend
 ```bash
 cd ayd-mes-ui
 npm install
@@ -133,14 +132,14 @@ Giriş ekranındaki *Hızlı Demo Girişi* butonları backend açıksa bu hesapl
 | Ayar | Nerede | Açıklama |
 |---|---|---|
 | `Jwt:Key` | ortam değişkeni `Jwt__Key` | JWT imza anahtarı (en az 32 karakter). Depoda hiçbir anahtar yoktur: geliştirmede tanımlanmazsa API her açılışta rastgele bir anahtar üretir. Üretimde mutlaka ortam değişkeni veya `dotnet user-secrets` ile verin. |
-| `ConnectionStrings:DefaultConnection` | `appsettings.json` | SQL Server bağlantısı |
+| `ConnectionStrings:DefaultConnection` | `appsettings.json` | SQLite dosya yolu (varsayılan `Data Source=aydmes.db`) |
 | `Cors:AllowedOrigins` | `appsettings.json` | Frontend adres(ler)i |
 | `VITE_API_URL` | `ayd-mes-ui/.env` | API adresi (varsayılan `http://localhost:5139/api`) |
 | `VITE_DEMO_MODE` | derleme ortamı | `true` olursa backend'e hiç istek atılmaz (canlı demo) |
 
 ## ⚠️ Sık Karşılaşılan Hatalar
 
-**"dotnet-ef bulunamadı":** `dotnet tool install --global dotnet-ef` komutunu çalıştırıp terminali yeniden açın.
+**Veritabanını sıfırlamak istiyorum:** API kapalıyken `AydMES.Api/aydmes.db` dosyasını silin; bir sonraki `dotnet run`'da örnek verilerle yeniden oluşur.
 
 **Girişte "Sunucuya bağlanılamadı":**
 - Backend'in (`dotnet run`) çalıştığından emin olun.

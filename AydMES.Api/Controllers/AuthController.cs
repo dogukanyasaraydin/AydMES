@@ -1,9 +1,11 @@
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using AydMES.Api.Models;
 using AydMES.Api.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AydMES.Api.Controllers
@@ -22,6 +24,7 @@ namespace AydMES.Api.Controllers
         }
 
         [AllowAnonymous]
+        [EnableRateLimiting("giris")]
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
@@ -50,27 +53,42 @@ namespace AydMES.Api.Controllers
                 new Claim(ClaimTypes.Role, user.Rol)
             };
 
+            var bitis = DateTime.UtcNow.AddHours(_jwt.SureSaat);
             var token = new JwtSecurityToken(
                 issuer: _jwt.Issuer,
                 audience: _jwt.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(_jwt.SureSaat),
+                expires: bitis,
                 signingCredentials: new SigningCredentials(_jwt.ImzaAnahtari(), SecurityAlgorithms.HmacSha256)
             );
 
+            // Token gövdede değil, JavaScript'in okuyamadığı httpOnly cookie'de döner
+            Response.Cookies.Append(OturumCerezi.Ad, new JwtSecurityTokenHandler().WriteToken(token),
+                OturumCerezi.Secenekler(Request, bitis));
+
             return Ok(new
             {
-                token = new JwtSecurityTokenHandler().WriteToken(token),
                 role = user.Rol,
                 username = user.AdSoyad
             });
+        }
+
+        [AllowAnonymous]
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete(OturumCerezi.Ad, OturumCerezi.Secenekler(Request, null));
+            return Ok();
         }
     }
 
     // Basit bir DTO (Data Transfer Object) sınıfı
     public class LoginRequest
     {
+        [MetinSiniri(50)]
         public string? Username { get; set; }
+
+        [MetinSiniri(128)]
         public string? Password { get; set; }
     }
 }

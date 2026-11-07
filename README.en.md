@@ -3,12 +3,12 @@
 [![CI](https://github.com/dogukanyasaraydin/AydMES/actions/workflows/ci.yml/badge.svg)](https://github.com/dogukanyasaraydin/AydMES/actions/workflows/ci.yml)
 ![.NET 8](https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet)
 ![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=000)
-![SQL Server](https://img.shields.io/badge/SQL%20Server-EF%20Core%208-CC2927?logo=microsoftsqlserver)
+![SQLite](https://img.shields.io/badge/SQLite-EF%20Core%208-003B57?logo=sqlite)
 
 **🌐 Live demo:** https://dogukanyasaraydin.github.io/AydMES/ — nothing to install. Pick a role from the *Quick Demo Login* buttons on the sign-in screen.
 &nbsp;·&nbsp; 🇹🇷 [Türkçe README](README.md)
 
-AYD MES is a web-based **Manufacturing Execution System** for a press-line factory. It tracks machine telemetry, OEE, downtime, die (mold) life and quality in real time. It consists of a React single-page app, an ASP.NET Core 8 REST API secured with JWT, and a SQL Server database. A background simulation service generates production data as if machines were streaming it live.
+AYD MES is a web-based **Manufacturing Execution System** for a press-line factory. It tracks machine telemetry, OEE, downtime, die (mold) life and quality in real time. It consists of a React single-page app, an ASP.NET Core 8 REST API secured with JWT, and a SQLite database. A background simulation service generates production data as if machines were streaming it live.
 
 > The UI is in Turkish. The domain was modelled on a real automotive press shop.
 
@@ -20,8 +20,9 @@ AYD MES is a web-based **Manufacturing Execution System** for a press-line facto
 - **OEE analytics:** Availability × Performance × Quality, per-machine comparison and production trend charts (Recharts).
 - **Digital twin:** factory floor layout in 2D top-down and 3D isometric views, colour-coded by machine status.
 - **Production simulation:** a .NET `BackgroundService` adds strokes to running machines every 3 seconds, produces scrap with 4% probability and closes the work order when its target is reached.
-- **Role-based access control:** 5 roles (Plant Manager, Quality Engineer, Operator…). Menus and actions are restricted in the UI, and endpoints are restricted by role in the API.
-- **Security:** JWT validated for issuer, audience and lifetime. Passwords are hashed with PBKDF2. The signing key lives in configuration, not in source. Every endpoint requires authentication by default (fallback policy).
+- **Role-based access control:** 5 roles (Plant Manager, Quality Engineer, Operator…). Menus are restricted in the UI and actions in the API. Operators can read but not modify data: a single convention requires an editor role on every non-GET endpoint.
+- **Security:** the JWT is carried in an httpOnly, SameSite=Strict cookie, so XSS can't steal it. Passwords are hashed with PBKDF2. Login is rate-limited (5 attempts per minute per IP). All input is validated. Production enforces HTTPS and HSTS. No secrets are stored in the repository. Every endpoint requires authentication by default.
+- **Automated tests:** 15 xUnit integration tests cover authentication, role restrictions, rate limiting, input validation and the production flow, and run in CI on every push.
 - **Offline mode:** if the API can't be reached, the UI detects it through timeouts and keeps working with sample data instead of hanging.
 - **Reporting:** PDF report export, Excel export, light and dark themes.
 
@@ -47,7 +48,7 @@ flowchart LR
         SIM --> EF
     end
 
-    DB[("SQL Server")]
+    DB[("SQLite<br/>(aydmes.db)")]
 
     FI -- "HTTP + Bearer JWT" --> AUTH
     FI -- "HTTP + Bearer JWT" --> CTRL
@@ -57,19 +58,17 @@ flowchart LR
 ## 🛠️ Tech Stack
 
 - **Frontend:** React 19, Vite, Recharts, responsive CSS (light and dark themes)
-- **Backend:** C# / .NET 8 Web API, Entity Framework Core 8 (code-first with migrations), JWT Bearer authentication, Swagger/OpenAPI
-- **Database:** Microsoft SQL Server
-- **CI/CD:** GitHub Actions. Every push builds the backend and lints and builds the frontend. The live demo is deployed to GitHub Pages automatically.
+- **Backend:** C# / .NET 8 Web API, Entity Framework Core 8 (code-first with migrations), JWT authentication (httpOnly cookie), rate limiting, Swagger/OpenAPI
+- **Testing:** xUnit integration tests with `WebApplicationFactory` and in-memory SQLite
+- **Database:** SQLite (thanks to EF Core, switching to SQL Server or PostgreSQL is a one-line change)
+- **CI/CD:** GitHub Actions. Every push builds and tests the backend and lints and builds the frontend. The live demo is deployed to GitHub Pages automatically.
 
 ## 📦 Getting Started
 
-**Requirements:** .NET 8 SDK, Node.js 20+, SQL Server (LocalDB is enough)
+**Requirements:** .NET 8 SDK and Node.js 20+. No database server is needed: the SQLite database (`aydmes.db`) is created with its tables and sample data on first run.
 
 ```bash
-dotnet tool install --global dotnet-ef
-```
-```bash
-cd AydMES.Api && dotnet ef database update && dotnet run
+cd AydMES.Api && dotnet run
 ```
 ```bash
 cd ayd-mes-ui && npm install && npm run dev

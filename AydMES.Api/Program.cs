@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,15 +25,38 @@ var imzaAnahtari = jwtAyarlari.ImzaAnahtari();
 builder.Services.AddSingleton(jwtAyarlari);
 
 // Tüm endpoint'ler varsayılan olarak giriş ister; açık olanlar [AllowAnonymous] ile işaretlenir.
-builder.Services.AddControllers();
+// GET dışındaki istekler ayrıca "Duzenleyici" rolü ister (Operatör salt-okunur).
+builder.Services.AddControllers(options => options.Conventions.Add(new YazmaYetkisiKurali()))
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // Doğrulama hataları frontend'in gösterebileceği { message, errors } biçiminde döner
+        options.InvalidModelStateResponseFactory = ctx =>
+        {
+            var hatalar = ctx.ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(x => x.Key, x => x.Value!.Errors.Select(e => string.IsNullOrEmpty(e.ErrorMessage) ? "Geçersiz değer." : e.ErrorMessage).ToArray());
+            var ilkHata = hatalar.Values.SelectMany(h => h).FirstOrDefault() ?? "Geçersiz istek.";
+            return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(new { message = ilkHata, errors = hatalar });
+        };
+    });
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+    options.AddPolicy(YazmaYetkisiKurali.Politika, p => p.RequireRole(Roller.Duzenleyiciler));
 });
 
-// SQL SERVER BAĞLANTISI
+// Kaba kuvvet (brute-force) koruması: aynı IP'den dakikada en fazla 5 giriş denemesi
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("giris", http => RateLimitPartition.GetFixedWindowLimiter(
+        http.Connection.RemoteIpAddress?.ToString() ?? "bilinmiyor",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+});
+
+// SQLITE BAĞLANTISI — veritabanı tek bir dosya (aydmes.db); ayrı bir sunucu kurulumu gerekmez
 builder.Services.AddDbContext<MesDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=aydmes.db"));
 
 // ---> JWT AUTHENTICATION (KİMLİK DOĞRULAMA) AYARLARI <---
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -49,6 +73,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromMinutes(1)
         };
+        // Token öncelikle httpOnly cookie'den okunur; Authorization: Bearer başlığı da desteklenir (API istemcileri için)
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = ctx =>
+            {
+                if (string.IsNullOrEmpty(ctx.Token) && ctx.Request.Cookies.TryGetValue(OturumCerezi.Ad, out var cerez))
+                    ctx.Token = cerez;
+                return Task.CompletedTask;
+            }
+        };
     });
 
 // Arka planda çalışan üretim simülasyon servisi
@@ -60,30 +94,12 @@ var izinliAdresler = builder.Configuration.GetSection("Cors:AllowedOrigins").Get
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactIzin", policy =>
-        policy.WithOrigins(izinliAdresler).AllowAnyHeader().AllowAnyMethod());
+        policy.WithOrigins(izinliAdresler).AllowAnyHeader().AllowAnyMethod().AllowCredentials()); // cookie için
 });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    // Swagger UI'da "Authorize" butonu ile token girilebilsin
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "POST /api/Auth/login ile alınan token'ı girin."
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } },
-            Array.Empty<string>()
-        }
-    });
-});
+// Swagger UI API ile aynı adreste çalıştığı için POST /api/Auth/login sonrası oturum cookie'si otomatik kullanılır.
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
@@ -96,7 +112,7 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        app.Logger.LogError(ex, "Veritabanı hazırlanamadı. Bağlantı cümlesini (ConnectionStrings:DefaultConnection) kontrol edin.");
+        app.Logger.LogError(ex, "Veritabanı hazırlanamadı (ConnectionStrings:DefaultConnection).");
     }
 }
 
@@ -105,14 +121,20 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-// app.UseHttpsRedirection(); // YERELDE HTTP ÇALIŞMASI İÇİN KAPATILDI
+else
+{
+    // Üretimde yalnızca HTTPS: HTTP istekleri yönlendirilir, tarayıcıya HSTS bildirilir.
+    // (Yerel geliştirmede kolay kurulum için HTTP açık bırakılır.)
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
 
 // ---> CORS VE GÜVENLİK PİPELİNE SIRALAMASI <---
 app.UseCors("ReactIzin");
 
 app.UseAuthentication(); // Önce kim olduğunu doğrula
 app.UseAuthorization();  // Sonra yetkisini kontrol et
+app.UseRateLimiter();
 
 // Frontend'in "sistem çevrimiçi mi?" kontrolü için giriş gerektirmeyen sağlık endpoint'i
 app.MapGet("/api/health", () => Results.Ok(new { durum = "ok", zaman = DateTime.UtcNow }))
@@ -121,3 +143,4 @@ app.MapGet("/api/health", () => Results.Ok(new { durum = "ok", zaman = DateTime.
 app.MapControllers();
 
 app.Run();
+public partial class Program { } // Entegrasyon testleri (WebApplicationFactory) için

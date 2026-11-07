@@ -28,3 +28,8 @@ TestResults/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# SQLite veritabanı (ilk çalıştırmada otomatik oluşur)
+*.db
+*.db-shm
+*.db-wal

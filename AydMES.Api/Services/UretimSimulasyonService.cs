@@ -40,7 +40,7 @@ namespace AydMES.Api.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"[SimulasyonServisi] Hata: {ex.Message}");
+                    _logger.LogError(ex, "[SimulasyonServisi] Döngü hatası");
                 }
 
                 await Task.Delay(DonguSuresiMs, stoppingToken);
@@ -110,26 +110,7 @@ namespace AydMES.Api.Services
                 }
             }
 
-            try
-            {
-                await db.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                // EF Core başarısız olursa ham SQL ile kaydet
-                _logger.LogWarning($"[SimulasyonServisi] EF Save başarısız, SQL fallback: {ex.Message}");
-                foreach (var makine in calisan)
-                {
-                    try
-                    {
-                        await db.Database.ExecuteSqlRawAsync(
-                            "UPDATE Makineler SET VurusSayisi = {0}, HataliAdet = {1}, FireOrani = {2}, Durum = {3} WHERE Id = {4}",
-                            makine.VurusSayisi, makine.HataliAdet ?? 0, makine.FireOrani, makine.Durum, makine.Id
-                        );
-                    }
-                    catch { }
-                }
-            }
+            await db.SaveChangesAsync();
         }
     }
 }
