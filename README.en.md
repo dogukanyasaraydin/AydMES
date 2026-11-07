@@ -79,7 +79,7 @@ The API runs at `http://localhost:5139` (Swagger at `/swagger`) and the UI at `h
 
 **Demo accounts** (seeded on first run, passwords stored hashed): `dogukan / 123` (Software Intern), `ahmet / demo123` (Plant Manager), `ayse / demo123` (Quality Engineer), `mehmet / demo123` (Operator).
 
-In production, provide the JWT signing key via the `Jwt__Key` environment variable (at least 32 characters).
+No signing key is stored in the repository. In development the API generates a random JWT key on every start, so sessions reset when it restarts. In production, provide the key via the `Jwt__Key` environment variable (at least 32 characters).
 
 ## 🤝 License
 Portfolio project. The source is viewable, but the project is not open source. **All rights reserved.** You may not use, copy, redistribute or sell any part of it without permission.
