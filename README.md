@@ -132,7 +132,7 @@ Giriş ekranındaki *Hızlı Demo Girişi* butonları backend açıksa bu hesapl
 
 | Ayar | Nerede | Açıklama |
 |---|---|---|
-| `Jwt:Key` | `appsettings.Development.json` / ortam değişkeni `Jwt__Key` | JWT imza anahtarı (en az 32 karakter). Geliştirme anahtarı yalnızca Development ortamında tanımlıdır. Üretimde ortam değişkeni veya `dotnet user-secrets` ile verin. |
+| `Jwt:Key` | ortam değişkeni `Jwt__Key` | JWT imza anahtarı (en az 32 karakter). Depoda hiçbir anahtar yoktur: geliştirmede tanımlanmazsa API her açılışta rastgele bir anahtar üretir. Üretimde mutlaka ortam değişkeni veya `dotnet user-secrets` ile verin. |
 | `ConnectionStrings:DefaultConnection` | `appsettings.json` | SQL Server bağlantısı |
 | `Cors:AllowedOrigins` | `appsettings.json` | Frontend adres(ler)i |
 | `VITE_API_URL` | `ayd-mes-ui/.env` | API adresi (varsayılan `http://localhost:5139/api`) |
@@ -146,7 +146,9 @@ Giriş ekranındaki *Hızlı Demo Girişi* butonları backend açıksa bu hesapl
 - Backend'in (`dotnet run`) çalıştığından emin olun.
 - Tarayıcı yerel HTTPS sertifikasını engelliyorsa `ayd-mes-ui/.env` dosyasına `VITE_API_URL=http://localhost:5139/api` satırını ekleyip `npm run dev`'i yeniden başlatın.
 
-**API "Jwt:Key yapılandırılmamış" hatasıyla açılmıyor:** API'yi `Development` ortamında çalıştırın (`dotnet run` bunu `launchSettings.json` üzerinden zaten yapar) ya da `Jwt__Key` ortam değişkenini tanımlayın.
+**API "Jwt:Key yapılandırılmamış" hatasıyla açılmıyor:** API `Development` dışındaki bir ortamda çalışıyordur. `Jwt__Key` ortam değişkenini tanımlayın ya da `dotnet run` ile (Development) çalıştırın.
+
+**API yeniden başlatılınca oturum düşüyor:** Geliştirmede JWT anahtarı her açılışta yeniden üretildiği için bu normaldir. Tekrar giriş yapmanız yeterli.
 
 ## 🤝 İletişim & Telif Hakkı
 Bu proje portfolyo amacıyla geliştirilmiş, kaynak kodu görüntülenebilir ama açık kaynak lisanslı olmayan bir projedir. **Tüm hakları saklıdır.** Kaynak kodu, tasarımı veya herhangi bir parçası izinsiz **kullanılamaz, kopyalanamaz, çoğaltılamaz ve ticari amaçla satılamaz.** Yalnızca inceleme (portfolyo) amacıyla görüntülenebilir.

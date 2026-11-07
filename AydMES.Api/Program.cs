@@ -12,6 +12,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ---> JWT AYARLARI (anahtar kaynak kodda değil, yapılandırmada) <---
 var jwtAyarlari = builder.Configuration.GetSection(JwtAyarlari.Bolum).Get<JwtAyarlari>() ?? new JwtAyarlari();
+if (string.IsNullOrWhiteSpace(jwtAyarlari.Key) && builder.Environment.IsDevelopment())
+{
+    // Depoda hiçbir anahtar tutulmaz: geliştirmede her açılışta rastgele bir anahtar üretilir.
+    // (API yeniden başlatılınca eski token'lar geçersiz olur, tekrar giriş yapmak yeterlidir.)
+    // Üretimde anahtar mutlaka Jwt__Key ortam değişkeniyle verilmelidir; verilmezse API açılmaz.
+    jwtAyarlari.Key = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(64));
+}
+// Anahtar eksik/kısaysa API açılırken hemen hata verir (ilk istekte değil).
+var imzaAnahtari = jwtAyarlari.ImzaAnahtari();
 builder.Services.AddSingleton(jwtAyarlari);
 
 // Tüm endpoint'ler varsayılan olarak giriş ister; açık olanlar [AllowAnonymous] ile işaretlenir.
@@ -32,7 +41,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = jwtAyarlari.ImzaAnahtari(),
+            IssuerSigningKey = imzaAnahtari,
             ValidateIssuer = true,
             ValidIssuer = jwtAyarlari.Issuer,
             ValidateAudience = true,

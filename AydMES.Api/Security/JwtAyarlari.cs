@@ -4,8 +4,8 @@ using Microsoft.IdentityModel.Tokens;
 namespace AydMES.Api.Security
 {
     /// <summary>
-    /// appsettings.json'daki "Jwt" bölümü. Anahtar kaynak koda yazılmaz; geliştirmede
-    /// appsettings.Development.json'dan, üretimde ortam değişkeninden (Jwt__Key) okunur.
+    /// appsettings.json'daki "Jwt" bölümü. Anahtar kaynak koda ve depoya yazılmaz: üretimde ortam
+    /// değişkeninden (Jwt__Key) okunur, geliştirmede tanımlı değilse açılışta rastgele üretilir (Program.cs).
     /// </summary>
     public class JwtAyarlari
     {
