@@ -20,8 +20,9 @@ AYD MES, pres hatları olan bir fabrikada makine telemetrisini, OEE'yi, duruşla
 | **OEE analizi** | Kullanılabilirlik × Performans × Kalite hesabı, makine karşılaştırma ve üretim trend grafikleri (Recharts). |
 | **Dijital ikiz** | Fabrika yerleşimini 2D kuş bakışı ve 3D izometrik görünümde makine durumlarıyla gösterir. |
 | **Üretim simülasyonu** | `BackgroundService`, çalışan makinelere 3 saniyede bir vuruş ekler, %4 olasılıkla fire üretir ve hedefe ulaşan iş emrini kapatır. |
-| **Rol bazlı yetkilendirme** | 5 rol (Fabrika Müdürü, Kalite Mühendisi, Operatör…). Menü ve işlemler frontend'de, uç noktalar API'de rol ile kısıtlanır. |
-| **Güvenlik** | JWT (issuer/audience/süre doğrulamalı), PBKDF2 ile hashlenmiş şifreler; imza anahtarı kaynak kodda değil yapılandırmada durur. Tüm uç noktalar varsayılan olarak kimlik doğrulama ister. |
+| **Rol bazlı yetkilendirme** | 5 rol (Fabrika Müdürü, Kalite Mühendisi, Operatör…). Menüler frontend'de, işlemler API'de rol ile kısıtlanır. Operatör veri okuyabilir ama değiştiremez; GET dışındaki tüm uçlar tek bir kuralla düzenleme yetkisi ister. |
+| **Güvenlik** | JWT httpOnly + SameSite=Strict cookie'de taşınır (XSS ile çalınamaz). Şifreler PBKDF2 ile hashlenir. Girişte deneme sınırı vardır (IP başına dakikada 5). Tüm girdiler doğrulanır. Üretimde HTTPS + HSTS açıktır. Depoda hiçbir gizli anahtar bulunmaz. |
+| **Otomatik testler** | xUnit entegrasyon testleri (13 test) kimlik doğrulama, rol kısıtlamaları, deneme sınırı ve veri doğrulamayı her push'ta CI'da kontrol eder. |
 | **Çevrimdışı mod** | Backend'e ulaşılamazsa arayüz zaman aşımıyla bunu algılar ve donmadan örnek verilerle çalışmaya devam eder. |
 | **Raporlama** | PDF rapor çıktısı ve Excel'e aktarma; açık/koyu tema. |
 
@@ -67,9 +68,10 @@ flowchart LR
 ## 🛠️ Teknolojiler
 
 - **Frontend:** React 19, Vite, Recharts, responsive CSS (açık/koyu tema)
-- **Backend:** C# / .NET 8 Web API, Entity Framework Core 8 (Code-First, migration'lar), JWT Bearer kimlik doğrulama, Swagger/OpenAPI
+- **Backend:** C# / .NET 8 Web API, Entity Framework Core 8 (Code-First, migration'lar), JWT kimlik doğrulama (httpOnly cookie), Rate Limiting, Swagger/OpenAPI
+- **Test:** xUnit, `WebApplicationFactory` + EF Core InMemory ile entegrasyon testleri
 - **Veritabanı:** Microsoft SQL Server
-- **CI/CD:** GitHub Actions. Her push'ta backend build ve frontend lint + build çalışır; canlı demo GitHub Pages'e otomatik yayınlanır.
+- **CI/CD:** GitHub Actions. Her push'ta backend build, testler ve frontend lint + build çalışır; canlı demo GitHub Pages'e otomatik yayınlanır.
 
 ## 📁 Proje Yapısı
 
@@ -79,8 +81,9 @@ AydMES.Api/                 ASP.NET Core 8 Web API
 ├── Data/VeriTohumlayici.cs İlk açılışta şema onarımı + örnek veri
 ├── Migrations/             EF Core migration'ları
 ├── Models/                 Entity sınıfları ve MesDbContext
-├── Security/               JWT ayarları, şifre hashleme, rol sabitleri
+├── Security/               JWT/cookie ayarları, şifre hashleme, roller, yazma yetkisi kuralı
 └── Services/               Üretim simülasyonu (BackgroundService)
+AydMES.Tests/               xUnit entegrasyon testleri (güvenlik ve doğrulama)
 ayd-mes-ui/                 React + Vite SPA
 ├── src/pages/              Dashboard, Analytics, FactoryMap, Production, Quality, …
 ├── src/components/         Uygulama kabuğu, giriş ekranı, modallar
@@ -106,7 +109,13 @@ Bağlantı cümlesi `AydMES.Api/appsettings.json` içindedir (varsayılan: `(loc
 cd AydMES.Api
 dotnet run
 ```
-API `http://localhost:5139` adresinde açılır. Swagger arayüzü `http://localhost:5139/swagger` adresindedir.
+API `http://localhost:5139` adresinde açılır. Swagger arayüzü `http://localhost:5139/swagger` adresindedir. Swagger'da önce `POST /api/Auth/login` çalıştırın; oturum cookie'si sonraki isteklerde otomatik kullanılır.
+
+### Testler
+```bash
+dotnet test AydMES.Tests
+```
+SQL Server gerektirmez; testler bellek içi veritabanıyla çalışır.
 
 ### 3. Frontend
 ```bash

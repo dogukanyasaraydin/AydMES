@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
+ï»¿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AydMES.Api.Models;
-using AydMES.Models; // Kendi model klasörünün adýný buraya yazabilirsin
+using AydMES.Models; // Kendi model klasÃ¶rÃ¼nÃ¼n adÄ±nÄ± buraya yazabilirsin
 
 namespace AydMES.Controllers
 {
@@ -16,14 +16,14 @@ namespace AydMES.Controllers
             _context = context;
         }
 
-        // GET: api/DurusKayitlari (React'in verileri çekeceði yer)
+        // GET: api/DurusKayitlari (React'in verileri Ã§ekeceÄŸi yer)
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DurusKaydi>>> GetDurusKayitlari()
         {
             return await _context.DurusKayitlari.ToListAsync();
         }
 
-        // POST: api/DurusKayitlari (Swagger'dan veya React'ten yeni duruþ ekleyeceðimiz yer)
+        // POST: api/DurusKayitlari (Swagger'dan veya React'ten yeni duruÅŸ ekleyeceÄŸimiz yer)
         [HttpPost]
         public async Task<ActionResult<DurusKaydi>> PostDurusKaydi(DurusKaydi durusKaydi)
         {

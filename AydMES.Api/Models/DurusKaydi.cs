@@ -1,12 +1,19 @@
-namespace AydMES.Models // Kendi proje adına göre burayı ayarlarsın
+ï»¿using System.ComponentModel.DataAnnotations;
+using AydMES.Api.Models;
+namespace AydMES.Models // Kendi proje adÄ±na gÃ¶re burayÄ± ayarlarsÄ±n
 {
     public class DurusKaydi
     {
         public int Id { get; set; }
-        public string? Saat { get; set; } // Örn: "14:12"
-        public string? MakineKod { get; set; } // Örn: "PRES-02"
-        public string? Neden { get; set; } // Örn: "Malzeme bekleme"
-        public int Sure { get; set; } // Örn: 27 (dakika cinsinden)
-        public string? Durum { get; set; } // Örn: "Açık", "Kapandı"
+        [MetinSiniri(20)]
+        public string? Saat { get; set; } // Ã–rn: "14:12"
+        [MetinSiniri(50)]
+        public string? MakineKod { get; set; } // Ã–rn: "PRES-02"
+        [MetinSiniri(200)]
+        public string? Neden { get; set; } // Ã–rn: "Malzeme bekleme"
+        [Range(0, 10_000_000, ErrorMessage = "{0} 0 ile 10.000.000 arasÄ±nda olmalÄ±dÄ±r.")]
+        public int Sure { get; set; } // Ã–rn: 27 (dakika cinsinden)
+        [MetinSiniri(50)]
+        public string? Durum { get; set; } // Ã–rn: "AÃ§Ä±k", "KapandÄ±"
     }
 }

@@ -38,17 +38,20 @@ export function LoginScreen({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
-  // Backend'e giriş isteği atar. Başarılıysa JWT'yi saklar ve true döner;
-  // hatalı şifrede false döner; sunucuya ulaşılamazsa hata fırlatır.
+  // Backend'e giriş isteği atar. Başarılıysa sunucu JWT'yi httpOnly cookie olarak ayarlar ve true döner;
+  // hatalı şifrede false döner; çok fazla denemede (429) uyarı verir; sunucuya ulaşılamazsa hata fırlatır.
   const apiGirisi = async (kullaniciAdi, sifre) => {
     const response = await fetch(`${API_URL}/Auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: kullaniciAdi, password: sifre })
     });
+    if (response.status === 429) {
+      setError('Çok fazla hatalı deneme. Lütfen 1 dakika sonra tekrar deneyin.');
+      return null;
+    }
     if (!response.ok) return false;
     const data = await response.json();
-    localStorage.setItem('token', data.token);
     localStorage.setItem('role', data.role);
     localStorage.setItem('username', data.username);
     onLogin(data.role, data.username);
@@ -62,7 +65,7 @@ export function LoginScreen({ onLogin }) {
     }
 
     try {
-      if (!(await apiGirisi(username, password))) {
+      if ((await apiGirisi(username, password)) === false) {
         setError('Hatalı kullanıcı adı veya şifre! (Deneme: dogukan / 123)');
       }
     } catch {
@@ -75,9 +78,9 @@ export function LoginScreen({ onLogin }) {
   // Hızlı demo: backend açıksa seed edilmiş demo hesabıyla gerçek JWT girişi yapılır,
   // kapalıysa (veya canlı demoda) çevrimdışı modda seçilen rolle devam edilir.
   const demoGirisi = async (rol, adSoyad, kullaniciAdi, sifre) => {
-    localStorage.removeItem('token');
     try {
-      if (await apiGirisi(kullaniciAdi, sifre)) return;
+      const sonuc = await apiGirisi(kullaniciAdi, sifre);
+      if (sonuc || sonuc === null) return; // giriş başarılı veya deneme sınırı aşıldı
     } catch {
       // Backend kapalı → çevrimdışı demo
     }

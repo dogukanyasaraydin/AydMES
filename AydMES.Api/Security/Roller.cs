@@ -11,5 +11,12 @@ namespace AydMES.Api.Security
 
         /// <summary>Kullanıcı yönetimi yapabilen roller.</summary>
         public const string Yoneticiler = FabrikaMuduru + "," + Supervizor + "," + YazilimStajyeri;
+
+        /// <summary>Veri ekleyip/düzenleyip/silebilen roller (frontend'deki canEdit ile aynı). Operatör salt-okunurdur.</summary>
+        public static readonly string[] Duzenleyiciler = { FabrikaMuduru, KaliteMuhendisi, YazilimStajyeri, Supervizor };
+
+        public static readonly string[] Tumu = { FabrikaMuduru, KaliteMuhendisi, Operator, YazilimStajyeri, Supervizor };
+
+        public static readonly string[] YoneticiListesi = Yoneticiler.Split(',');
     }
 }

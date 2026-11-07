@@ -11,7 +11,7 @@ CV'ye, LinkedIn'e veya iş başvurusuna kopyalanabilecek hazır metinler.
 
 - Pres hatlarına sahip bir fabrika için makine telemetrisi, OEE, duruş, kalıp ömrü ve kalite süreçlerini gerçek zamanlı izleyen full-stack bir MES uygulaması geliştirdim.
 - ASP.NET Core 8 ile 13 kaynak controller'lı bir REST API tasarladım; veri katmanını EF Core Code-First ve migration'larla SQL Server üzerine kurdum.
-- JWT kimlik doğrulaması, PBKDF2 ile şifre hashleme ve 5 rollü yetkilendirme (RBAC) uyguladım. Tüm uç noktalar varsayılan olarak kimlik doğrulama istiyor.
+- JWT kimlik doğrulaması (httpOnly cookie), PBKDF2 ile şifre hashleme, 5 rollü yetkilendirme (RBAC), girişte deneme sınırı (rate limiting) ve girdi doğrulaması uyguladım; bunları 13 xUnit entegrasyon testiyle doğruladım.
 - `BackgroundService` ile makinelerden canlı veri geliyormuş gibi üretim, fire ve iş emri tamamlanmasını üreten bir simülasyon servisi yazdım.
 - React 19 ile OEE analizi, 2D/3D dijital ikiz fabrika haritası, üretim planlama, PDF/Excel raporlama ve koyu tema içeren 9 modüllü bir arayüz geliştirdim.
 - Backend'e ulaşılamadığında arayüzün donmadan örnek verilerle çalışmaya devam ettiği bir çevrimdışı mod kurdum. Bu mod sayesinde frontend GitHub Pages'te canlı demo olarak yayınlanıyor.
@@ -29,7 +29,7 @@ CV'ye, LinkedIn'e veya iş başvurusuna kopyalanabilecek hazır metinler.
 
 - Built a full-stack MES that monitors machine telemetry, OEE, downtime, die life and quality in real time for a press-line factory.
 - Designed a REST API with 13 resource controllers in ASP.NET Core 8, with a data layer on SQL Server using EF Core code-first and migrations.
-- Implemented JWT authentication, PBKDF2 password hashing and role-based access control with 5 roles. Every endpoint requires authentication by default.
+- Implemented JWT authentication (httpOnly cookie), PBKDF2 password hashing, role-based access control with 5 roles, login rate limiting and input validation, all verified by 13 xUnit integration tests.
 - Wrote a `BackgroundService` simulation that produces strokes, scrap and work-order completion as if machines were streaming data live.
 - Developed a 9-module React 19 UI with OEE analytics, a 2D/3D digital-twin factory map, production planning, PDF/Excel reporting and a dark theme.
 - Added an offline mode that keeps the UI working on sample data when the API is unreachable. This lets the frontend run as a live demo on GitHub Pages.
@@ -42,6 +42,8 @@ CV'ye, LinkedIn'e veya iş başvurusuna kopyalanabilecek hazır metinler.
 
 ## Mülakatta anlatılabilecek teknik noktalar
 
+- **Neden token cookie'de?** `localStorage`'daki token, sayfadaki herhangi bir XSS açığıyla JavaScript tarafından okunabilir. httpOnly cookie'ye JavaScript erişemez. SameSite=Strict de başka sitelerden gelen isteklerde cookie gönderilmesini engelleyerek CSRF'yi önler.
+- **Yazma yetkisi neden tek kural (convention)?** GET dışındaki her action otomatik olarak düzenleme rolü istiyor. Yeni bir controller'da yetki etiketi unutulsa bile Operatör veri değiştiremez.
 - **Neden fallback authorization policy?** Yeni bir controller eklenip `[Authorize]` unutulsa bile uç nokta açık kalmaz. Açık olması gerekenler (`login`, `health`) bilinçli olarak `[AllowAnonymous]` ile işaretleniyor.
 - **Eski düz metin şifrelerin geçişi:** `SifreHasher`, hash formatında olmayan eski kayıtları bir kereye mahsus sabit zamanlı karşılaştırmayla doğruluyor ve ilk başarılı girişte hash'e çeviriyor. Böylece mevcut kullanıcılar şifre sıfırlamak zorunda kalmıyor.
 - **Çevrimdışı mod:** `fetch` sarmalayıcısı istekleri zaman aşımına bağlıyor ve backend'in durumunu global bir olayla (`backend-status`) yayınlıyor. Sayfalar hata durumunda mock veriye düşüyor.

@@ -7,12 +7,12 @@ namespace AydMES.Api.Controllers
     public class KaliteOnayDto
     {
         public int Id { get; set; }
-        public string? PartiKodu { get; set; }
-        public string? IslemAdimi { get; set; }
-        public string? Durum { get; set; }
-        public string? Saat { get; set; }
-        public string? OlcumDegeri { get; set; }
-        public string? Notlar { get; set; }
+        [MetinSiniri(50)] public string? PartiKodu { get; set; }
+        [MetinSiniri(100)] public string? IslemAdimi { get; set; }
+        [MetinSiniri(50)] public string? Durum { get; set; }
+        [MetinSiniri(20)] public string? Saat { get; set; }
+        [MetinSiniri(20)] public string? OlcumDegeri { get; set; }
+        [MetinSiniri(1000)] public string? Notlar { get; set; }
     }
 
     [Route("api/[controller]")]

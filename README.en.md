@@ -20,8 +20,9 @@ AYD MES is a web-based **Manufacturing Execution System** for a press-line facto
 - **OEE analytics:** Availability × Performance × Quality, per-machine comparison and production trend charts (Recharts).
 - **Digital twin:** factory floor layout in 2D top-down and 3D isometric views, colour-coded by machine status.
 - **Production simulation:** a .NET `BackgroundService` adds strokes to running machines every 3 seconds, produces scrap with 4% probability and closes the work order when its target is reached.
-- **Role-based access control:** 5 roles (Plant Manager, Quality Engineer, Operator…). Menus and actions are restricted in the UI, and endpoints are restricted by role in the API.
-- **Security:** JWT validated for issuer, audience and lifetime. Passwords are hashed with PBKDF2. The signing key lives in configuration, not in source. Every endpoint requires authentication by default (fallback policy).
+- **Role-based access control:** 5 roles (Plant Manager, Quality Engineer, Operator…). Menus are restricted in the UI and actions in the API. Operators can read but not modify data: a single convention requires an editor role on every non-GET endpoint.
+- **Security:** the JWT is carried in an httpOnly, SameSite=Strict cookie, so XSS can't steal it. Passwords are hashed with PBKDF2. Login is rate-limited (5 attempts per minute per IP). All input is validated. Production enforces HTTPS and HSTS. No secrets are stored in the repository. Every endpoint requires authentication by default.
+- **Automated tests:** 13 xUnit integration tests cover authentication, role restrictions, rate limiting and input validation, and run in CI on every push.
 - **Offline mode:** if the API can't be reached, the UI detects it through timeouts and keeps working with sample data instead of hanging.
 - **Reporting:** PDF report export, Excel export, light and dark themes.
 
@@ -57,9 +58,10 @@ flowchart LR
 ## 🛠️ Tech Stack
 
 - **Frontend:** React 19, Vite, Recharts, responsive CSS (light and dark themes)
-- **Backend:** C# / .NET 8 Web API, Entity Framework Core 8 (code-first with migrations), JWT Bearer authentication, Swagger/OpenAPI
+- **Backend:** C# / .NET 8 Web API, Entity Framework Core 8 (code-first with migrations), JWT authentication (httpOnly cookie), rate limiting, Swagger/OpenAPI
+- **Testing:** xUnit integration tests with `WebApplicationFactory` and EF Core InMemory
 - **Database:** Microsoft SQL Server
-- **CI/CD:** GitHub Actions. Every push builds the backend and lints and builds the frontend. The live demo is deployed to GitHub Pages automatically.
+- **CI/CD:** GitHub Actions. Every push builds and tests the backend and lints and builds the frontend. The live demo is deployed to GitHub Pages automatically.
 
 ## 📦 Getting Started
 

@@ -38,24 +38,18 @@ const originalFetch = window.__originalFetch;
 window.fetch = async function (...args) {
   let [resource, config] = args;
   
-  // Sadece kendi Backend API'mize (C#) giden isteklere kalkanı uyguluyoruz
-  if (typeof resource === 'string' && resource.includes('/api/')) {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config = config || {};
-      config.headers = {
-        ...config.headers,
-        'Authorization': `Bearer ${token}`
-      };
-    }
+  // Kendi API'mize giden isteklerde oturum cookie'si (httpOnly JWT) gönderilir.
+  // Token JavaScript'ten hiç okunmaz/saklanmaz; bu yüzden XSS ile çalınamaz.
+  const apiIstegi = typeof resource === 'string' && resource.includes('/api/');
+  if (apiIstegi) {
+    config = { ...(config || {}), credentials: 'include' };
   }
 
   const response = await originalFetch(resource, config);
   
-  // C# Backend yetkisiz giriş veya süresi dolmuş token tespit ederse
-  if (response.status === 401) {
-    console.error("Yetkisiz İstek (401). Güvenlik duvarı oturumu sonlandırıyor.");
-    localStorage.removeItem('token');
+  // C# Backend süresi dolmuş/geçersiz oturum tespit ederse (giriş denemesinin kendisi hariç)
+  if (apiIstegi && response.status === 401 && !resource.includes('/Auth/login')) {
+    console.error("Yetkisiz İstek (401). Oturum sonlandırılıyor.");
     window.dispatchEvent(new CustomEvent('auth-unauthorized'));
   }
   
@@ -213,6 +207,17 @@ export default function App() {
     gosterBildirim(`Hoş geldiniz ${activeName} (${activeRole})!`, 'success');
   };
 
+  // Sunucudaki oturum cookie'sini temizler (backend kapalıysa sessizce geçer)
+  const cikisYap = async () => {
+    setIsKullaniciMenuAcik(false);
+    try {
+      await fetch(`${API_URL}/Auth/logout`, { method: 'POST' });
+    } catch {
+      // çevrimdışı mod: temizlenecek sunucu oturumu yok
+    }
+    setIsAuthenticated(false);
+  };
+
   const handleRoleChange = (newRole) => {
     setUserRole(newRole);
     localStorage.setItem('role', newRole);
@@ -309,7 +314,7 @@ export default function App() {
                 <div style={{ padding: '10px 15px', cursor: 'pointer', borderBottom: `1px solid ${ayarlar.tema === 'dark' ? '#4A5568' : '#EDF2F7'}` }} onClick={() => { setIsKullaniciMenuAcik(false); setIsAyarlarAcik(true); }}>
                   <span style={{ fontSize: '13px', fontWeight: 'bold' }}>Ayarlar</span>
                 </div>
-                <div style={{ padding: '10px 15px', cursor: 'pointer', color: '#E53E3E' }} onClick={() => setIsAuthenticated(false)}>
+                <div style={{ padding: '10px 15px', cursor: 'pointer', color: '#E53E3E' }} onClick={cikisYap}>
                   <span style={{ fontSize: '13px', fontWeight: 'bold' }}>Çıkış Yap</span>
                 </div>
               </div>

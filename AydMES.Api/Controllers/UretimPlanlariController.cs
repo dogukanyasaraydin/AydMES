@@ -6,7 +6,7 @@ namespace AydMES.Api.Controllers
 {
     public class OptimizasyonDto
     {
-        public string? Hedef { get; set; }
+        [MetinSiniri(100)] public string? Hedef { get; set; }
     }
 
     [Route("api/[controller]")]

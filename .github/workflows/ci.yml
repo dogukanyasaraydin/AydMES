@@ -10,18 +10,16 @@ permissions:
 
 jobs:
   backend:
-    name: Backend (.NET 8)
+    name: Backend (.NET 8) + testler
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: AydMES.Api
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-      - run: dotnet restore
-      - run: dotnet build --no-restore -c Release
+      - run: dotnet build AydMES.Api -c Release
+      - name: Entegrasyon testleri (güvenlik, yetkilendirme, doğrulama)
+        run: dotnet test AydMES.Tests -c Release --logger "console;verbosity=normal"
 
   frontend:
     name: Frontend (React + Vite)
