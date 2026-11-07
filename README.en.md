@@ -10,7 +10,7 @@
 
 AYD MES is a web-based **Manufacturing Execution System** for a press-line factory. It tracks machine telemetry, OEE, downtime, die (mold) life and quality in real time. It consists of a React single-page app, an ASP.NET Core 8 REST API secured with JWT, and a SQLite database. A background simulation service generates production data as if machines were streaming it live.
 
-> The UI is in Turkish. The domain was modelled on a real automotive press shop.
+> The UI is in Turkish.
 
 ![Dashboard](docs/screenshots/02-genel-bakis.webp)
 
